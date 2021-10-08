@@ -1,178 +1,202 @@
 <div *ngIf="user" class="container">
-  <div class="row">
-    <div>
-      <h4>Information about {{user.firstName}}</h4>
-    </div>
-    <form [formGroup]="userDetailsGroup">
-        <table class="table table-striped ">
-          <thead>
-          <tr>
-            <th scope="col">First name</th>
-            <th scope="col">Last name</th>
-            <th scope="col">User name</th>
-            <th scope="col">Phone</th>
-            <th scope="col">Email</th>
-            <th scope="col">Options</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <ng-container *ngIf="!editing">
-              <td class="text_decoration">{{user.firstName}}</td>
-              <td class="text_decoration">{{user.lastName}}</td>
-              <td class="text_decoration">{{user.userName}}</td>
-              <td class="text_decoration">{{user.phone}}</td>
-              <td class="text_decoration">{{user.email}}</td>
-            </ng-container>
-            <ng-container *ngIf="editing">
-              <td>
-                <div class="md-form">
-                  <input mdbInput type="text" class="form-control" placeholder="first name" formControlName="firstName">
-                  <span class="error_message" *ngIf="getFormControls.firstName.invalid">* field required</span>
-                </div>
-              </td>
-              <td>
-                <div class="md-form">
-                  <input mdbInput type="text" class="form-control" placeholder="last name" formControlName="lastName">
-                  <span class="error_message" *ngIf="getFormControls.lastName.invalid">* field required</span>
-                </div>
-              </td>
-              <td>
-                <div class="md-form">
-                  <input mdbInput type="text" class="form-control" placeholder="user name" formControlName="userName">
-                  <span class="error_message" *ngIf="getFormControls.userName.invalid">* field required</span>
-                </div>
-              </td>
-              <td>
-                <div class="md-form">
-                  <input mdbInput type="text" class="form-control" placeholder="phone" formControlName="phone">
-                  <span class="error_message" *ngIf="getFormControls.phone.invalid">* field required</span>
-                </div>
-              </td>
-              <td>
-                <div class="md-form">
-                  <input mdbInput type="email" class="form-control" placeholder="email" formControlName="email">
-                  <span class="error_message" *ngIf="getFormControls.email.invalid">* field required, email must be validity</span>
-                </div>
-              </td>
-            </ng-container>
-            <td class="text_decoration_btn_group">
-              <div class="user_btn_group">
-                <div>
-                  <button type="button" (click)="editUser()" [disabled]="editing" class="btn btn-info">Edit</button>
-                </div>
-                <div>
-                  <button type="button" (click)="updateUser()" [disabled]="!editing || userDetailsGroup.invalid" class="btn btn-success">Send</button>
-                </div>
-                <div *ngIf="editing">
-                  <button type="button" (click)="cancelEditing()" class="btn btn-danger">Cancel</button>
-                </div>
+  <form [formGroup]="userDetailsGroup">
+    <div class="row">
+      <div>
+        <h4>Information about {{user.firstName}}</h4>
+      </div>
+
+      <table class="table table-striped ">
+        <thead>
+        <tr>
+          <th scope="col">First name</th>
+          <th scope="col">Last name</th>
+          <th scope="col">User name</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Email</th>
+          <th scope="col">Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <ng-container *ngIf="!editing">
+            <td class="text_decoration">{{user.firstName}}</td>
+            <td class="text_decoration">{{user.lastName}}</td>
+            <td class="text_decoration">{{user.userName}}</td>
+            <td class="text_decoration">{{user.phone}}</td>
+            <td class="text_decoration">{{user.email}}</td>
+          </ng-container>
+          <ng-container *ngIf="editing">
+            <td>
+              <div class="md-form">
+                <input mdbInput type="text" class="form-control" placeholder="first name" formControlName="firstName">
+                <span class="error_message" *ngIf="getFormControls.firstName.invalid">* field required</span>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td> User addresses</td>
-          </tr>
-          </tbody>
-        </table>
-    </form>
-  </div>
-  <div class="address_list">
-    <div>
-      <button type="button" class="btn btn-success">Add address</button>
+            <td>
+              <div class="md-form">
+                <input mdbInput type="text" class="form-control" placeholder="last name" formControlName="lastName">
+                <span class="error_message" *ngIf="getFormControls.lastName.invalid">* field required</span>
+              </div>
+            </td>
+            <td>
+              <div class="md-form">
+                <input mdbInput type="text" class="form-control" placeholder="user name" formControlName="userName">
+                <span class="error_message" *ngIf="getFormControls.userName.invalid">* field required</span>
+              </div>
+            </td>
+            <td>
+              <div class="md-form">
+                <input mdbInput type="text" class="form-control" placeholder="phone" formControlName="phone">
+                <span class="error_message" *ngIf="getFormControls.phone.invalid">* field required</span>
+              </div>
+            </td>
+            <td>
+              <div class="md-form">
+                <input mdbInput type="email" class="form-control" placeholder="email" formControlName="email">
+                <span class="error_message" *ngIf="getFormControls.email.invalid">* field required, email must be validity</span>
+              </div>
+            </td>
+          </ng-container>
+          <td class="text_decoration_btn_group">
+            <div class="user_btn_group">
+              <div *ngIf="!editing">
+                <button type="button" (click)="editUser()" [disabled]="editing" class="btn btn-info">Edit</button>
+              </div>
+              <div *ngIf="!editing">
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                  Delete
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel1">Do you want delete this user ?</h5>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="deleteUser()" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" (click)="deleteUser()">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="editing">
+                <button type="button" (click)="updateUser()" [disabled]="!userDetailsGroup.valid" class="btn btn-success">Send</button>
+              </div>
+              <div *ngIf="editing">
+                <button type="button" (click)="cancelEditing()" class="btn btn-danger">Cancel</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td> User addresses</td>
+        </tr>
+        </tbody>
+      </table>
     </div>
-    <ng-container [formGroup]="myArrayGroup">
-        <div formArrayName="userAddresses" *ngFor="let userAddress of userAddresses.controls; index as i">
-          <ng-container [formGroupName]="i">
+    <div class="address_list">
+      <div>
+        <button type="button" class="btn btn-success" (click)="addAnotherAddress()">Add address</button>
+      </div>
+      <div formArrayName="userAddress" *ngFor="let userAddress of this.userAddresses.controls; index as i">
+        <ng-container [formGroupName]="i">
 
-            <table class="table table-striped">
-              <thead>
-              <th>Address type</th>
-              <th>Address</th>
-              <th>Country</th>
-              <th>City</th>
-              <th>Postal code</th>
-              <th>Options</th>
-              </thead>
-              <tbody>
-              <tr>
-                <ng-container *ngIf="!indexEditingUserAddresses.includes(i)">
-                  <td>{{userAddress.value.addressType}}</td>
-                  <td>{{userAddress.value.address}}</td>
-                  <td>{{userAddress.value.country}}</td>
-                  <td>{{userAddress.value.city}}</td>
-                  <td>{{userAddress.value.postalCode}}</td>
-                </ng-container>
-                <ng-container *ngIf="indexEditingUserAddresses.includes(i)">
-                  <td>
-                    <div class="md-form">
-                      <input mdbInput type="text" class="form-control" placeholder="address type" formControlName="addressType">
-
-                    </div>
-                  </td>
-                  <td>
-                    <div class="md-form">
-                      <input mdbInput type="text" class="form-control" placeholder="address" formControlName="address">
-
-                    </div>
-                  </td>
-                  <td>
-                    <div class="md-form">
-                      <input mdbInput type="text" class="form-control" placeholder="country" formControlName="country">
-
-                    </div>
-                  </td>
-                  <td>
-                    <div class="md-form">
-                      <input mdbInput type="text" class="form-control" placeholder="city" formControlName="city">
-
-                    </div>
-                  </td>
-                  <td>
-                    <div class="md-form">
-                      <input mdbInput type="text" class="form-control" placeholder="postal code" formControlName="postalCode">
-
-                    </div>
-                  </td>
-                </ng-container>
+          <table class="table table-striped">
+            <thead>
+            <th>Address type</th>
+            <th>Address</th>
+            <th>Country</th>
+            <th>City</th>
+            <th>Postal code</th>
+            <th>Options</th>
+            </thead>
+            <tbody>
+            <tr>
+              <ng-container *ngIf="!indexEditingUserAddresses.includes(i)">
+                <td class="text_decoration">{{userAddress.value.addressType}}</td>
+                <td class="text_decoration">{{userAddress.value.address}}</td>
+                <td class="text_decoration">{{userAddress.value.country}}</td>
+                <td class="text_decoration">{{userAddress.value.city}}</td>
+                <td class="text_decoration">{{userAddress.value.postalCode}}</td>
+              </ng-container>
+              <ng-container *ngIf="indexEditingUserAddresses.includes(i) || checkIsFormGroupEmpty">
                 <td>
-                  <div class="user_address_btn">
-                    <div>
-                      <button type="button" [disabled]="userAddressEditing" (click)="editUserAddress(i)" class="btn btn-info">Edit</button>
-                    </div>
-                    <div>
-                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                        Delete
-                      </button>
-                      <!-- Modal -->
-                      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="staticBackdropLabel">Do you want delete this address ?</h5>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
-                            </div>
+                  <div class="md-form">
+                    <input mdbInput type="text" class="form-control" placeholder="address type" formControlName="addressType">
+
+                  </div>
+                </td>
+                <td>
+                  <div class="md-form">
+                    <input mdbInput type="text" class="form-control" placeholder="address" formControlName="address">
+
+                  </div>
+                </td>
+                <td>
+                  <div class="md-form">
+                    <input mdbInput type="text" class="form-control" placeholder="country" formControlName="country">
+
+                  </div>
+                </td>
+                <td>
+                  <div class="md-form">
+                    <input mdbInput type="text" class="form-control" placeholder="city" formControlName="city">
+
+                  </div>
+                </td>
+                <td>
+                  <div class="md-form">
+                    <input mdbInput type="text" class="form-control" placeholder="postal code" formControlName="postalCode">
+
+                  </div>
+                </td>
+              </ng-container>
+              <td>
+                <div class="user_address_btn">
+                  <div *ngIf="!indexEditingUserAddresses.includes(i)">
+                    <button type="button" (click)="editUserAddress(i)" class="btn btn-info">Edit</button>
+                  </div>
+                  <div *ngIf="indexEditingUserAddresses.includes(i)">
+                    <button type="button"
+                            (click)="updateUserAddress(i)"
+                            [disabled]="!this.userAddresses.controls[i].valid"
+                            class="btn btn-success"
+                    >Save</button>
+                  </div>
+                  <div *ngIf="!indexEditingUserAddresses.includes(i)">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                      Delete
+                    </button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Do you want delete this address ?</h5>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" (click)="deleteUserAddress(i)" data-bs-dismiss="modal">Delete</button>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <div>
-                      <button type="button" *ngIf="!userAddressEditing" class="btn btn-success">Send</button>
-                    </div>
-                    <div *ngIf="userAddressEditing">
-                      <button type="button" (click)="cancelUserAddressEditing()" class="btn btn-danger">Cancel</button>
-                    </div>
                   </div>
-                </td>
-              </tr>
-              </tbody>
-            </table>
 
-          </ng-container>
-        </div>
-    </ng-container>
-  </div>
+                  <div *ngIf="indexEditingUserAddresses.includes(i)">
+                    <button type="button" (click)="cancelUserAddressEditing(i)" class="btn btn-danger">Cancel</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+        </ng-container>
+      </div>
+    </div>
+  </form>
+
 </div>

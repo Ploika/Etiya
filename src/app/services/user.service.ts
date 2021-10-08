@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Observable, throwError} from "rxjs";
 import {IFullUser} from "../models/fullUser";
 import {catchError} from "rxjs/operators";
-import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse} from "@angular/common/http";
 import {urls} from "../constants";
 
 @Injectable({
@@ -34,6 +34,17 @@ export class UserService {
   }
   updateUserById(user: IFullUser, userId: number, token: string): Observable<IFullUser>{
     return this.http.put<IFullUser>(`${urls.updateUserById}${userId}`, user, {
+      headers: new HttpHeaders({
+        'Authorization': `${token}`
+      })
+    })
+      .pipe(
+        catchError(this.errorHandler)
+      )
+  }
+  deleteUserById(userId: number, token: string): Observable<HttpResponse<Object>>{
+    return this.http.delete<Object>(`${urls.deleteUserById}${userId}`, {
+      observe: 'response',
       headers: new HttpHeaders({
         'Authorization': `${token}`
       })

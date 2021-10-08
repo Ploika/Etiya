@@ -1,3 +1,8 @@
+.container{
+  padding: 0;
+  margin-top: 20px;
+  border-top: 3px solid gray;
+}
 .row{
   margin-top: 40px;
   position: center;
@@ -5,7 +10,6 @@
 .user_btn_group{
   display: flex;
   gap: 15px;
-  width: 225px;
 }
 h4{
   width: 700px;

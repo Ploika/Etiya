@@ -16,13 +16,13 @@ export class UserDetailsComponent implements OnInit {
   editing: boolean = false;
 
   @Input() user: IFullUser;
-  @Input() userIndex: number
+  @Input() userIndex: number;
   userDetailsGroup: FormGroup;
   userAddressGroup: FormGroup;
-  myArrayGroup: FormGroup;
   userAddresses = new FormArray([]);
-  userAddressEditing: boolean = false;
-  indexEditingUserAddresses: number[] = []
+  indexEditingUserAddresses: number[] = [];
+  checkIsFormGroupEmpty: boolean = false;
+
   @Output()
   lift = new EventEmitter()
 
@@ -37,40 +37,33 @@ export class UserDetailsComponent implements OnInit {
       lastName: [this.user.lastName, [Validators.required]],
       userName: [this.user.userName, [Validators.required]],
       phone: [this.user.phone, [Validators.required]],
-      email: [this.user.email, [Validators.required, Validators.email]]
+      email: [this.user.email, [Validators.required, Validators.email]],
+      userAddress: this.userAddresses
     })
+
     this.user.userAddress.forEach((userAddress) => {
       this.userAddressGroup = this.fb.group({
         addressType: [userAddress.addressType, [Validators.required]],
         address: [userAddress.address, [Validators.required]],
         country: [userAddress.country, [Validators.required]],
         city: [userAddress.city, [Validators.required]],
-        postalCode: [userAddress.postalCode, [Validators.required]]
+        postalCode: [userAddress.postalCode, [Validators.required, Validators.minLength(5), Validators.maxLength(5)]]
       })
       this.userAddresses.push(this.userAddressGroup);
     })
-    this.myArrayGroup = new FormGroup({
-      userAddresses: this.userAddresses
-    })
+
   }
 
   editUser(): void {
     this.editing = true;
+    console.log(this.user.id);
   }
-
 
   get getFormControls(): any {
     return this.userDetailsGroup.controls
   }
 
-  updateUser() {
-
-    this.user.firstName = this.userDetailsGroup.controls.firstName.value;
-    this.user.lastName = this.userDetailsGroup.controls.lastName.value;
-    this.user.userName = this.userDetailsGroup.controls.userName.value;
-    this.user.phone = this.userDetailsGroup.controls.phone.value;
-    this.user.email = this.userDetailsGroup.controls.email.value;
-
+  requestForUpdateUser(): void{
     const token = this.tokenService.getToken();
 
     if(token && this.user.id) {
@@ -79,20 +72,23 @@ export class UserDetailsComponent implements OnInit {
           untilDestroyed(this)
         )
         .subscribe(_ => {
-          this.toastr.success('Updated');
+          this.toastr.success('Success');
           this.lift.emit(true);
           this.editing = false;
         }, error => {
-
-          if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-            const errorMessage = error.error
-            this.toastr.error(errorMessage.substr(44))
-          } else {
+          if(error.status === 400) {
             this.toastr.error('Something went wrong')
+          } else  if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')){
+            const errorMessage = error.error;
+            this.toastr.error(errorMessage.substr(44));
           }
         })
     }
+  }
 
+  updateUser() {
+    this.user = {...this.user, ...this.userDetailsGroup.value}
+    this.requestForUpdateUser()
   }
 
   cancelEditing() {
@@ -101,11 +97,65 @@ export class UserDetailsComponent implements OnInit {
 
 
   editUserAddress(i: number): void {
-    console.log(i)
     this.indexEditingUserAddresses.push(i)
   }
 
-  cancelUserAddressEditing(): void {
+  cancelUserAddressEditing(index: number): void {
 
+    Object.keys(this.userAddresses.controls[index].value).forEach(value => {
+      if(!this.userAddresses?.controls[index]?.value[value]) {
+        this.userAddresses.controls.splice(index, 1);
+      } else {
+        this.userAddresses.controls[index].patchValue(this.user.userAddress[index]);
+        this.indexEditingUserAddresses.splice(this.indexEditingUserAddresses[index], 1)
+      }
+    })
+  }
+
+  updateUserAddress(index: number): void {
+    console.log(this.userDetailsGroup.value.userAddress[index]);
+    this.user = {...this.user, ...this.userDetailsGroup.value}
+    console.log(this.user)
+    this.requestForUpdateUser()
+  }
+
+  deleteUserAddress(index: number): void {
+    this.user.userAddress.splice(index, 1);
+
+    this.requestForUpdateUser();
+  }
+
+  addAnotherAddress(): void {
+    this.userAddressGroup = this.fb.group({
+      addressType: ['', [Validators.required]],
+      address: ['', [Validators.required]],
+      country: ['', [Validators.required]],
+      city: ['', [Validators.required]],
+      postalCode: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(5)]]
+    })
+    this.userAddresses.push(this.userAddressGroup);
+
+    const lastElement = this.userAddresses.controls.slice(-1);
+
+    Object.keys(lastElement[0].value).forEach(value => {
+        if(lastElement[0].value[value] === '') {
+          this.indexEditingUserAddresses.push(this.userAddresses.length - 1);
+        }
+    })
+  }
+
+  deleteUser(): void {
+    console.log(this.user.id);
+    const token = this.tokenService.getToken()
+    if(this.user.id && token){
+      // this.userService.deleteUserById(this.user.id, token)
+      //   .pipe(
+      //     untilDestroyed(this)
+      //   )
+      //   .subscribe(response => {
+      //     console.log(response);
+      //     this.lift.emit(true);
+      //   }, error => console.log(error))
+    }
   }
 }

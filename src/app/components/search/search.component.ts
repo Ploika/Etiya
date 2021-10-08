@@ -42,6 +42,7 @@ export class SearchComponent implements OnInit {
    this.initFormGroup();
    this.searchUser = '';
    this.users = [];
+    this.concatParams = '';
   }
 
   getUserByQueryParams(): void {
@@ -59,7 +60,16 @@ export class SearchComponent implements OnInit {
 
   catchUser(event: boolean) {
     if(event){
-      this.dynamicRequest();
+      this.userService.getAllUsers()
+        .pipe(
+          untilDestroyed(this)
+        )
+        .subscribe(users => {
+          this.users = users
+        }, error => this.toastr.error('Something went wrong'))
+
+      this.initFormGroup()
+      this.concatParams = '';
     }
   }
 
@@ -70,7 +80,8 @@ export class SearchComponent implements OnInit {
           untilDestroyed(this)
         )
         .subscribe(users => {
-          this.users = users
+          this.users = users;
+          console.log(this.users)
         }, error => this.toastr.error('Something went wrong'))
     } else {
       this.userService.getUserByQueryParams(this.concatParams)
