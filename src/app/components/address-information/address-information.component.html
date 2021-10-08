@@ -1,0 +1,64 @@
+<div class="wrapper">
+  <div class="header">
+    <h2>Create user</h2>
+    <p>Address information</p>
+  </div>
+  <div class="body">
+        <div [formGroup]="myGroup">
+          <div formArrayName="userAddresses" *ngFor="let addressFormGroup of userAddresses.controls; index as i">
+            <ng-container [formGroupName]="i">
+              <div style="margin-top: 30px">
+                <select class="browser-default custom-select" formControlName="addressType">
+                  <option value="Home_Address">Home address</option>
+                  <option value="Shipment_Address">Shipment address</option>
+                  <option value="Billing_Address">Billing address</option>
+                </select>
+                <span class="error_message" *ngIf="getFormControls.addressType.invalid && getFormControls.addressType.touched">* select address type</span>
+              </div>
+
+              <div class="md-form">
+                <label class="">Address</label>
+                <input mdbInput type="text" class="form-control" formControlName="address">
+                <span class="error_message" *ngIf="getFormControls.address.invalid && getFormControls.address.touched">* enter address</span>
+              </div>
+
+              <div class="city_block">
+                <div>
+                  <div class="md-form">
+                    <label class="">City</label>
+                    <input mdbInput type="text" class="form-control" formControlName="city">
+                    <span class="error_message" *ngIf="getFormControls.city.invalid && getFormControls.city.touched">* enter city</span>
+                  </div>
+                </div>
+
+                <div *ngIf="countries">
+                  <select class="browser-default custom-select" formControlName="country">
+                    <ng-container *ngFor="let country of countries">
+                      <option  value={{country.name}}>{{country.name}}</option>
+                    </ng-container>
+                  </select>
+                  <span class="error_message" *ngIf="getFormControls.country.invalid && getFormControls.country.touched">* select country</span>
+                </div>
+              </div>
+
+              <div class="md-form">
+                <label class="">Postal code</label>
+                <input mdbInput type="number" class="form-control" formControlName="postalCode">
+                <span class="error_message" *ngIf="getFormControls.postalCode.invalid && getFormControls.postalCode.touched">* enter postal code, length 5</span>
+              </div>
+            </ng-container>
+          </div>
+
+          <p class="another_address" (click)="addAnotherAddress()">Add another address</p>
+
+          <div class="button_group">
+            <div>
+              <button type="button" class="btn btn-light" (click)="backToPreviousPage()">Previous</button>
+            </div>
+            <div>
+              <button type="button" (click)="saveData()" [disabled]="!addressGroup.valid" class="btn btn-primary">Next</button>
+            </div>
+          </div>
+        </div>
+  </div>
+</div>

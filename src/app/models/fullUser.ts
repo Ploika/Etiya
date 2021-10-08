@@ -7,5 +7,6 @@ export interface IFullUser {
   password: string,
   phone: string,
   userName: string,
-  userAddress: [IUserAddress]
+  id?: number,
+  userAddress: IUserAddress[]
 }

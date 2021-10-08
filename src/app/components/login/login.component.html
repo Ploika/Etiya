@@ -1,0 +1,21 @@
+<div class="wrapper">
+  <div class="header">
+    <h2>login page</h2>
+  </div>
+  <div class="body">
+    <form [formGroup]="loginGroup" (ngSubmit)="loginUser()">
+      <div class="md-form">
+        <label  class="">Email</label>
+        <input mdbInput type="email" class="form-control" formControlName="email">
+        <span class="error_message" *ngIf="getFormControls.email.invalid && getFormControls.email.touched">* enter validity email</span>
+      </div>
+
+      <div class="md-form">
+        <label  class="">Password</label>
+        <input mdbInput type="password" class="form-control" formControlName="password">
+      </div>
+
+      <button class="btn" type="submit" [disabled]="loginGroup.invalid" class="btn btn-primary">Login</button>
+    </form>
+  </div>
+</div>

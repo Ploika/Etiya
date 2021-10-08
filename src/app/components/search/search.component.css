@@ -1,0 +1,45 @@
+.title{
+  display: flex;
+}
+.title > div:nth-of-type(1){
+  width: 66%;
+}
+.icon_block{
+  display: flex;
+  align-items: center;
+}
+.icon_block:hover{
+  cursor: pointer;
+}
+.icon_block > div:nth-of-type(2) > p{
+  margin-bottom: 0;
+  font-size: 12px;
+  color: gray;
+}
+.own_icon{
+  font-size: 25px;
+  color: gray;
+}
+.body{
+  width: 1000px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.first_name, .last_name{
+  width: 49%;
+}
+
+.user_name, .email, .phone{
+width: 32%;
+}
+.btn_group{
+  width: 88%;
+  display: flex;
+  gap: 50px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.users_list{
+  margin-top: 40px;
+}

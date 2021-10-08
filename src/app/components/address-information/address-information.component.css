@@ -1,0 +1,40 @@
+.body{
+  width: 500px;
+  margin: 0 auto;
+}
+.btn-new{
+  outline: none;
+  border-bottom: 1px solid gray;
+}
+.error_message{
+  font-size: 15px;
+  color: red;
+}
+.city_block{
+  display: flex;
+  align-items: center;
+  gap: 35px;
+}
+.city_block > div:nth-of-type(1){
+  width: 50%;
+}
+.city_block > div:nth-of-type(2){
+  align-self: flex-end;
+  width: 50%;
+}
+.another_address{
+  margin: 10px 0 0 20px;
+  font-size: 15px;
+  color: lightgray;
+}
+.another_address:hover{
+  cursor: pointer;
+}
+.button_group{
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+.md-form{
+  margin-top: 15px;
+}

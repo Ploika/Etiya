@@ -1,0 +1,27 @@
+.row{
+  margin-top: 40px;
+  position: center;
+}
+.user_btn_group{
+  display: flex;
+  gap: 15px;
+  width: 225px;
+}
+h4{
+  width: 700px;
+}
+.text_decoration{
+  width: 300px;
+}
+.error_message{
+  color: red;
+  font-size: 12px;
+}
+.address_list > div:nth-of-type(1){
+  float: right;
+}
+.user_address_btn{
+  display: flex;
+  gap: 5px;
+}
+

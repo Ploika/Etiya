@@ -1,0 +1,19 @@
+.header{
+  width: 200px;
+  margin: 0 auto;
+}
+.body{
+  width: 400px;
+  margin: 0 auto;
+}
+.body, div:nth-of-type(2){
+  margin-top: 20px;
+}
+.btn{
+  margin-top: 15px;
+  float: right;
+}
+.error_message{
+  font-size: 15px;
+  color: red;
+}
