@@ -2,7 +2,7 @@
   <form [formGroup]="userDetailsGroup">
     <div class="row">
       <div>
-        <h4>Information about {{user.firstName}}</h4>
+        <h4 class="user_information">Information about {{user.firstName}}</h4>
       </div>
 
       <table class="table table-striped ">
@@ -29,31 +29,31 @@
             <td>
               <div class="md-form">
                 <input mdbInput type="text" class="form-control" placeholder="first name" formControlName="firstName">
-                <span class="error_message" *ngIf="getFormControls.firstName.invalid">* field required</span>
+                <span class="error_message" *ngIf="getFormControls.firstName.invalid">field required</span>
               </div>
             </td>
             <td>
               <div class="md-form">
                 <input mdbInput type="text" class="form-control" placeholder="last name" formControlName="lastName">
-                <span class="error_message" *ngIf="getFormControls.lastName.invalid">* field required</span>
+                <span class="error_message" *ngIf="getFormControls.lastName.invalid">field required</span>
               </div>
             </td>
             <td>
               <div class="md-form">
                 <input mdbInput type="text" class="form-control" placeholder="user name" formControlName="userName">
-                <span class="error_message" *ngIf="getFormControls.userName.invalid">* field required</span>
+                <span class="error_message" *ngIf="getFormControls.userName.invalid">field required</span>
               </div>
             </td>
             <td>
               <div class="md-form">
                 <input mdbInput type="text" class="form-control" placeholder="phone" formControlName="phone">
-                <span class="error_message" *ngIf="getFormControls.phone.invalid">* field required</span>
+                <span class="error_message" *ngIf="getFormControls.phone.invalid">field required</span>
               </div>
             </td>
             <td>
               <div class="md-form">
                 <input mdbInput type="email" class="form-control" placeholder="email" formControlName="email">
-                <span class="error_message" *ngIf="getFormControls.email.invalid">* field required, email must be validity</span>
+                <span class="error_message" *ngIf="getFormControls.email.invalid">field required, email must be validity</span>
               </div>
             </td>
           </ng-container>
@@ -63,10 +63,16 @@
                 <button type="button" (click)="editUser()" [disabled]="editing" class="btn btn-info">Edit</button>
               </div>
               <div *ngIf="!editing">
-                <button type="button" class="btn btn-danger" (click)="deleteUser()">Delete</button>
+                <button type="button"
+                        class="btn btn-danger"
+                        (click)="deleteUser()"
+                        [disabled]="userAddresses.controls[userAddresses.length -1]?.status === 'INVALID'">Delete</button>
               </div>
               <div *ngIf="editing">
-                <button type="button" (click)="updateUser()" [disabled]="!userDetailsGroup.valid" class="btn btn-success">Send</button>
+                <button type="button"
+                        (click)="updateUser()"
+                        [disabled]="!userDetailsGroup.valid || userAddresses.controls[userAddresses.length -1]?.status === 'INVALID'"
+                        class="btn btn-success">Send</button>
               </div>
               <div *ngIf="editing">
                 <button type="button" (click)="cancelEditing()" class="btn btn-danger">Cancel</button>
@@ -82,9 +88,12 @@
     </div>
     <div class="address_list">
       <div>
-        <button type="button" class="btn btn-success" (click)="addAnotherAddress()">Add address</button>
+        <button type="button"
+                class="btn btn-success"
+                [disabled]="userAddresses.controls[userAddresses.length -1]?.status === 'INVALID'"
+                (click)="addAnotherAddress()">Add address</button>
       </div>
-      <div formArrayName="userAddress" *ngFor="let userAddress of this.userAddresses.controls; index as i">
+      <div formArrayName="userAddress" *ngFor="let userAddress of userAddresses.controls; index as i">
         <ng-container [formGroupName]="i">
 
           <table class="table table-striped">
@@ -105,42 +114,53 @@
                 <td class="text_decoration">{{userAddress.value.city}}</td>
                 <td class="text_decoration">{{userAddress.value.postalCode}}</td>
               </ng-container>
-              <ng-container *ngIf="indexEditingUserAddresses.includes(i) || checkIsFormGroupEmpty">
+              <ng-container *ngIf="indexEditingUserAddresses.includes(i)">
                 <td>
                   <div class="md-form">
-                    <input mdbInput type="text" class="form-control" placeholder="address type" formControlName="addressType">
-
+                    <select class="browser-default custom-select" placeholder="address type" formControlName="addressType">
+                      <option value="Home_Address">Home address</option>
+                      <option value="Shipment_Address">Shipment address</option>
+                      <option value="Billing_Address">Billing address</option>
+                    </select>
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.addressType.status === 'INVALID'">field required</span>
                   </div>
                 </td>
                 <td>
                   <div class="md-form">
                     <input mdbInput type="text" class="form-control" placeholder="address" formControlName="address">
-
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.address.status === 'INVALID'">field required</span>
                   </div>
                 </td>
                 <td>
-                  <div class="md-form">
-                    <input mdbInput type="text" class="form-control" placeholder="country" formControlName="country">
-
+                  <div class="md-form" *ngIf="countries">
+                    <select class="browser-default custom-select" formControlName="country">
+                      <ng-container *ngFor="let country of countries">
+                        <option  value={{country.name}}>{{country.name}}</option>
+                      </ng-container>
+                    </select>
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.country.status === 'INVALID'">field required</span>
                   </div>
                 </td>
                 <td>
                   <div class="md-form">
                     <input mdbInput type="text" class="form-control" placeholder="city" formControlName="city">
-
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.city.status === 'INVALID'">field required</span>
                   </div>
                 </td>
                 <td>
                   <div class="md-form">
-                    <input mdbInput type="text" class="form-control" placeholder="postal code" formControlName="postalCode">
-
+                    <input mdbInput type="text" maxlength="5" class="form-control" placeholder="postal code" formControlName="postalCode">
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.postalCode.status === 'INVALID'">field required, length 5</span>
                   </div>
                 </td>
               </ng-container>
               <td>
                 <div class="user_address_btn">
                   <div *ngIf="!indexEditingUserAddresses.includes(i)">
-                    <button type="button" (click)="editUserAddress(i)" class="btn btn-info">Edit</button>
+                    <button type="button"
+                            [disabled]="userAddresses.controls[userAddresses.length -1]?.status === 'INVALID'"
+                            (click)="editUserAddress(i)"
+                            class="btn btn-info">Edit</button>
                   </div>
                   <div *ngIf="indexEditingUserAddresses.includes(i)">
                     <button type="button"
@@ -150,7 +170,10 @@
                     >Save</button>
                   </div>
                   <div *ngIf="!indexEditingUserAddresses.includes(i)">
-                    <button type="button" class="btn btn-danger" (click)="deleteUserAddress(i)" data-bs-dismiss="modal">Delete</button>
+                    <button type="button"
+                            class="btn btn-danger"
+                            (click)="deleteUserAddress(i)"
+                            [disabled]="userAddresses.controls[userAddresses.length -1]?.status === 'INVALID'">Delete</button>
                   </div>
 
                   <div *ngIf="indexEditingUserAddresses.includes(i)">

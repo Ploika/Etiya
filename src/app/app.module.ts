@@ -17,7 +17,7 @@ import { UserFilterPipe } from './services/user-filter.pipe';
 import { DialogDeleteComponent } from './components/dialog-delete/dialog-delete.component';
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogModule} from "@angular/material/dialog";
-import { DialogDeleteLogoutComponent } from './components/dialog-delete-logout/dialog-delete-logout.component';
+import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
 
 
 
@@ -40,10 +40,10 @@ let routes: Routes = [
     UserDetailsComponent,
     UserFilterPipe,
     DialogDeleteComponent,
-    DialogDeleteLogoutComponent,
+    LogoutModalComponent,
 
   ],
-  entryComponents: [DialogDeleteComponent, DialogDeleteLogoutComponent],
+  entryComponents: [DialogDeleteComponent, LogoutModalComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

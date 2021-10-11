@@ -7,6 +7,8 @@ import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
+import {ICountries} from "../../models/countries";
+import {IUserAddress} from "../../models/userAddress";
 
 @Component({
   selector: 'app-user-details',
@@ -23,7 +25,7 @@ export class UserDetailsComponent implements OnInit {
   userAddressGroup: FormGroup;
   userAddresses = new FormArray([]);
   indexEditingUserAddresses: number[] = [];
-  checkIsFormGroupEmpty: boolean = false;
+  countries: ICountries[];
 
   @Output()
   lift = new EventEmitter()
@@ -55,20 +57,26 @@ export class UserDetailsComponent implements OnInit {
       this.userAddresses.push(this.userAddressGroup);
     })
 
-  }
-
-  editUser(): void {
-    this.editing = true;
-    console.log(this.user.id);
+    this.userService.getAllCountry()
+      .pipe(
+        untilDestroyed(this)
+      )
+      .subscribe(countries => this.countries = countries.data)
   }
 
   get getFormControls(): any {
     return this.userDetailsGroup.controls
   }
+  get getAddressFormControls(): any {
+    return this.userAddresses.controls
+  }
+
+  editUser(): void {
+    this.editing = true;
+  }
 
   requestForUpdateUser(): void{
     const token = this.tokenService.getToken();
-
     if(token && this.user.id) {
       this.userService.updateUserById(this.user, this.user.id, token)
         .pipe(
@@ -80,7 +88,9 @@ export class UserDetailsComponent implements OnInit {
           this.editing = false;
         }, error => {
           if(error.status === 400) {
-            this.toastr.error('Something went wrong')
+            this.toastr.error('Please fill valid data')
+          } else  if(error.status === 401){
+            this.toastr.error('Unauthorized');
           } else  if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')){
             const errorMessage = error.error;
             this.toastr.error(errorMessage.substr(44));
@@ -92,67 +102,14 @@ export class UserDetailsComponent implements OnInit {
   updateUser() {
     this.user = {...this.user, ...this.userDetailsGroup.value}
     this.requestForUpdateUser()
+    console.log(this.user)
   }
 
   cancelEditing() {
     this.editing = false;
   }
 
-
-  editUserAddress(i: number): void {
-    this.indexEditingUserAddresses.push(i)
-  }
-
-  cancelUserAddressEditing(index: number): void {
-    Object.keys(this.userAddresses.controls[index].value).forEach(value => {
-      if(!this.userAddresses?.controls[index]?.value[value]) {
-        this.userAddresses.controls.splice(index, 1);
-      } else {
-        this.userAddresses.controls[index].patchValue(this.user.userAddress[index]);
-        this.indexEditingUserAddresses.splice(this.indexEditingUserAddresses[index], 1)
-      }
-    })
-  }
-
-  updateUserAddress(index: number): void {
-    console.log(this.userDetailsGroup.value.userAddress[index]);
-    this.user = {...this.user, ...this.userDetailsGroup.value}
-    console.log(this.user)
-    this.requestForUpdateUser()
-  }
-
-  deleteUserAddress(index: number): void {
-    // this.user.userAddress.splice(index, 1);
-    //
-    // this.requestForUpdateUser();
-    let dialogRef = this.dialog.open(DialogDeleteComponent);
-    dialogRef.afterClosed().subscribe(result => {
-      if(result === 'true') {
-        console.log(index);
-      }
-    })
-  }
-
-  addAnotherAddress(): void {
-    this.userAddressGroup = this.fb.group({
-      addressType: ['', [Validators.required]],
-      address: ['', [Validators.required]],
-      country: ['', [Validators.required]],
-      city: ['', [Validators.required]],
-      postalCode: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(5)]]
-    })
-    this.userAddresses.push(this.userAddressGroup);
-
-    const lastElement = this.userAddresses.controls.slice(-1);
-
-    Object.keys(lastElement[0].value).forEach(value => {
-        if(lastElement[0].value[value] === '') {
-          this.indexEditingUserAddresses.push(this.userAddresses.length - 1);
-        }
-    })
-  }
-
-    deleteUser(): void {
+  deleteUser(): void {
     const token = this.tokenService.getToken();
     let dialogRef = this.dialog.open(DialogDeleteComponent);
 
@@ -168,5 +125,60 @@ export class UserDetailsComponent implements OnInit {
           }, error => this.toastr.error('Something went wrong'))
       }
     })
+  }
+
+
+  editUserAddress(i: number): void {
+    this.indexEditingUserAddresses.push(i)
+  }
+
+  cancelUserAddressEditing(index: number): void {
+
+    let positionIndex = this.indexEditingUserAddresses.indexOf(index);
+    let confirmArray: number[] = []
+
+    Object.keys(this.userAddresses.controls[index].value).find(value => {
+      if(this.userAddresses?.controls[index]?.value[value] === '') {
+        confirmArray.push(1)
+      }
+    })
+    if(confirmArray.length === 5){
+        this.userAddresses.controls.pop();
+        this.indexEditingUserAddresses.pop();
+    } else {
+      this.indexEditingUserAddresses.splice(positionIndex, 1);
+      this.userAddresses.controls[index].patchValue(this.user.userAddress[index]);
+    }
+
+  }
+
+  updateUserAddress(index: number): void {
+    this.user.userAddress.map((value) => {
+      return {...value, postalCode: +value.postalCode}
+    })
+    this.user = {...this.user, ...this.userDetailsGroup.value}
+    this.requestForUpdateUser()
+  }
+
+  deleteUserAddress(index: number): void {
+    let dialogRef = this.dialog.open(DialogDeleteComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if(result === 'true') {
+        this.user.userAddress.splice(index, 1);
+        this.requestForUpdateUser();
+      }
+    })
+  }
+
+  addAnotherAddress(): void {
+    this.userAddressGroup = this.fb.group({
+      addressType: ['', [Validators.required]],
+      address: ['', [Validators.required]],
+      country: ['', [Validators.required]],
+      city: ['', [Validators.required]],
+      postalCode: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(5)]]
+    })
+    this.userAddresses.push(this.userAddressGroup);
+    this.indexEditingUserAddresses.push(this.userAddresses.length - 1);
   }
 }

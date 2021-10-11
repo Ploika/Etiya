@@ -81,7 +81,6 @@ export class SearchComponent implements OnInit {
         )
         .subscribe(users => {
           this.users = users;
-          console.log(this.users)
         }, error => this.toastr.error('Something went wrong'))
     } else {
       this.userService.getUserByQueryParams(this.concatParams)

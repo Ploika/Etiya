@@ -4,6 +4,7 @@ import {IFullUser} from "../models/fullUser";
 import {catchError} from "rxjs/operators";
 import {HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse} from "@angular/common/http";
 import {urls} from "../constants";
+import {ICountryResponse} from "../models/countryResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,12 @@ export class UserService {
         'Authorization': `${token}`
       })
     })
+      .pipe(
+        catchError(this.errorHandler)
+      )
+  }
+  getAllCountry(): Observable<ICountryResponse>{
+    return this.http.get<ICountryResponse>(urls.allCountries)
       .pipe(
         catchError(this.errorHandler)
       )

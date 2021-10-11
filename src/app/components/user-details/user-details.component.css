@@ -28,4 +28,6 @@ h4{
   display: flex;
   gap: 5px;
 }
-
+.user_information{
+  font-size: 30px;
+}

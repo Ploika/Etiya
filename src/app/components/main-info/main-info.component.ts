@@ -24,11 +24,11 @@ export class MainInfoComponent implements OnInit {
               private dataTransfer: DataService) {
 
     this.userMainData = fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      userName: ['', [Validators.required]],
-      phone: ['', [Validators.required]],
-      email: ['', [Validators.required]],
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      userName: ['', [Validators.required, Validators.minLength(2)]],
+      phone: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email, Validators.minLength(2)]],
       password: ['', [Validators.required, Validators.minLength(4)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(4)]]
     },  { validators: this.checkPasswords })

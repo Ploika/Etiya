@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {DataService} from "../../services/data.service";
 import {Router} from "@angular/router";
@@ -8,6 +8,7 @@ import {AuthService} from "../../services/auth.service";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import { ToastrService } from 'ngx-toastr';
 import {ICountries} from "../../models/countries";
+import {IUserAddress} from "../../models/userAddress";
 
 @Component({
   selector: 'app-address-information',
@@ -54,8 +55,8 @@ export class AddressInformationComponent implements OnInit {
   initFormGroup(): FormGroup{
     return this.addressGroup = this.fb.group({
       addressType: ['', [Validators.required]],
-      address: ['', [Validators.required]],
-      city: ['', [Validators.required]],
+      address: ['', [Validators.required, Validators.minLength(2)]],
+      city: ['', [Validators.required, Validators.minLength(2)]],
       country: ['', [Validators.required]],
       postalCode: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(5)]],
     })
@@ -70,15 +71,18 @@ export class AddressInformationComponent implements OnInit {
     window.history.back();
   }
 
+
   saveData(): void {
     let fullUser: IFullUser = {
-      email: this.user.email,
-      firstName: this.user.firstName,
-      lastName: this.user.lastName,
-      phone: this.user.phone,
-      userName: this.user.userName,
-      password: this.user.password,
-      userAddress: this.userAddresses.value
+      email: this.user?.email,
+      firstName: this.user?.firstName,
+      lastName: this.user?.lastName,
+      phone: this.user?.phone,
+      userName: this.user?.userName,
+      password: this.user?.password,
+      userAddress: (this.userAddresses.value as Array<IUserAddress>).map(value => {
+        return {...value, postalCode: +value.postalCode}
+      })
     }
     this.authService.createUser(fullUser)
       .pipe(
@@ -88,7 +92,11 @@ export class AddressInformationComponent implements OnInit {
         this.toastr.success('Created');
         this.router.navigate(['login'])
       }, error => {
-        if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
+        if(error.status === 400){
+          this.toastr.error('Please type valid data')
+        } else if (error.status === 401) {
+          this.toastr.error('Something went wrong')
+        } else if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
           const errorMessage = error.error
           this.toastr.error(errorMessage.substr(44))
         }
