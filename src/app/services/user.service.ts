@@ -42,9 +42,8 @@ export class UserService {
         catchError(this.errorHandler)
       )
   }
-  deleteUserById(userId: number, token: string): Observable<HttpResponse<Object>>{
-    return this.http.delete<Object>(`${urls.deleteUserById}${userId}`, {
-      observe: 'response',
+  deleteUserById(userId: number, token: string): Observable<null>{
+    return this.http.delete<null>(`${urls.deleteUserById}${userId}`, {
       headers: new HttpHeaders({
         'Authorization': `${token}`
       })

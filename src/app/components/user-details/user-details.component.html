@@ -63,23 +63,7 @@
                 <button type="button" (click)="editUser()" [disabled]="editing" class="btn btn-info">Edit</button>
               </div>
               <div *ngIf="!editing">
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
-                  Delete
-                </button>
-                <!-- Modal -->
-                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel1">Do you want delete this user ?</h5>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" (click)="deleteUser()" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger" (click)="deleteUser()">Delete</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <button type="button" class="btn btn-danger" (click)="deleteUser()">Delete</button>
               </div>
               <div *ngIf="editing">
                 <button type="button" (click)="updateUser()" [disabled]="!userDetailsGroup.valid" class="btn btn-success">Send</button>
@@ -166,23 +150,7 @@
                     >Save</button>
                   </div>
                   <div *ngIf="!indexEditingUserAddresses.includes(i)">
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                      Delete
-                    </button>
-                    <!-- Modal -->
-                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="staticBackdropLabel">Do you want delete this address ?</h5>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-danger" (click)="deleteUserAddress(i)" data-bs-dismiss="modal">Delete</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <button type="button" class="btn btn-danger" (click)="deleteUserAddress(i)" data-bs-dismiss="modal">Delete</button>
                   </div>
 
                   <div *ngIf="indexEditingUserAddresses.includes(i)">

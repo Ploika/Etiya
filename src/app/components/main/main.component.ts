@@ -6,6 +6,8 @@ import {IFullUser} from "../../models/fullUser";
 import {Router} from "@angular/router";
 import {ToastrService} from "ngx-toastr";
 import {UserService} from "../../services/user.service";
+import {MatDialog} from "@angular/material/dialog";
+import {DialogDeleteLogoutComponent} from "../dialog-delete-logout/dialog-delete-logout.component";
 
 @Component({
   selector: 'app-main',
@@ -19,7 +21,8 @@ export class MainComponent implements OnInit {
               private userService: UserService,
               private tokenService: TokenService,
               private router: Router,
-              private toastr: ToastrService) { }
+              private toastr: ToastrService,
+              public dialog: MatDialog) { }
 
   ngOnInit(): void {
     const decodedToken = this.tokenService.decodeToken();
@@ -36,8 +39,13 @@ export class MainComponent implements OnInit {
   }
 
   logout() {
-    this.tokenService.removeToken();
-    this.router.navigate(['login'])
+    let dialogRef = this.dialog.open(DialogDeleteLogoutComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if(result === 'true') {
+        this.tokenService.removeToken();
+        this.router.navigate(['login'])
+      }
+    })
   }
 
   goToSearch() {

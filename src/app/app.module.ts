@@ -14,6 +14,12 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import { SearchComponent } from './components/search/search.component';
 import { UserDetailsComponent } from './components/user-details/user-details.component';
 import { UserFilterPipe } from './services/user-filter.pipe';
+import { DialogDeleteComponent } from './components/dialog-delete/dialog-delete.component';
+import {MatButtonModule} from "@angular/material/button";
+import {MatDialogModule} from "@angular/material/dialog";
+import { DialogDeleteLogoutComponent } from './components/dialog-delete-logout/dialog-delete-logout.component';
+
+
 
 let routes: Routes = [
   {path: '', redirectTo: 'login', pathMatch: 'full'},
@@ -33,7 +39,11 @@ let routes: Routes = [
     SearchComponent,
     UserDetailsComponent,
     UserFilterPipe,
+    DialogDeleteComponent,
+    DialogDeleteLogoutComponent,
+
   ],
+  entryComponents: [DialogDeleteComponent, DialogDeleteLogoutComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
@@ -46,7 +56,9 @@ let routes: Routes = [
       preventDuplicates: true,
     }),
     BrowserAnimationsModule,
-    FormsModule
+    FormsModule,
+    MatButtonModule,
+    MatDialogModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

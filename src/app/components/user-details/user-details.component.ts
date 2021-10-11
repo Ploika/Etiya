@@ -5,6 +5,8 @@ import {TokenService} from "../../services/token.service";
 import {UserService} from "../../services/user.service";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
+import {MatDialog} from "@angular/material/dialog";
+import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
 
 @Component({
   selector: 'app-user-details',
@@ -29,7 +31,8 @@ export class UserDetailsComponent implements OnInit {
   constructor(private fb: FormBuilder,
               private tokenService: TokenService,
               private userService: UserService,
-              private toastr: ToastrService) { }
+              private toastr: ToastrService,
+              public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.userDetailsGroup = this.fb.group({
@@ -101,7 +104,6 @@ export class UserDetailsComponent implements OnInit {
   }
 
   cancelUserAddressEditing(index: number): void {
-
     Object.keys(this.userAddresses.controls[index].value).forEach(value => {
       if(!this.userAddresses?.controls[index]?.value[value]) {
         this.userAddresses.controls.splice(index, 1);
@@ -120,9 +122,15 @@ export class UserDetailsComponent implements OnInit {
   }
 
   deleteUserAddress(index: number): void {
-    this.user.userAddress.splice(index, 1);
-
-    this.requestForUpdateUser();
+    // this.user.userAddress.splice(index, 1);
+    //
+    // this.requestForUpdateUser();
+    let dialogRef = this.dialog.open(DialogDeleteComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if(result === 'true') {
+        console.log(index);
+      }
+    })
   }
 
   addAnotherAddress(): void {
@@ -144,18 +152,21 @@ export class UserDetailsComponent implements OnInit {
     })
   }
 
-  deleteUser(): void {
-    console.log(this.user.id);
-    const token = this.tokenService.getToken()
-    if(this.user.id && token){
-      // this.userService.deleteUserById(this.user.id, token)
-      //   .pipe(
-      //     untilDestroyed(this)
-      //   )
-      //   .subscribe(response => {
-      //     console.log(response);
-      //     this.lift.emit(true);
-      //   }, error => console.log(error))
-    }
+    deleteUser(): void {
+    const token = this.tokenService.getToken();
+    let dialogRef = this.dialog.open(DialogDeleteComponent);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result === 'true' && (this.user.id && token)){
+        this.userService.deleteUserById(this.user.id, token)
+          .pipe(
+            untilDestroyed(this)
+          )
+          .subscribe(response => {
+            this.toastr.success('Deleted');
+            this.lift.emit(true);
+          }, error => this.toastr.error('Something went wrong'))
+      }
+    })
   }
 }

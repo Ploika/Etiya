@@ -1,0 +1,10 @@
+.dialog_title{
+  font-size: 30px;
+  text-align: center;
+}
+.btn_group{
+  display: flex;
+  gap: 60px;
+  justify-content: center;
+  margin-top: 20px;
+}
