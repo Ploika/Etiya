@@ -4,6 +4,11 @@ import {UserService} from "../../services/user.service";
 import {IFullUser} from "../../models/fullUser";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
+import {Select, Store} from "@ngxs/store";
+import {Observable} from "rxjs";
+import {UserState} from "../../store/states/users.state";
+import { tap } from 'rxjs/operators';
+import {AddUsers} from "../../store/actions/users.actions";
 
 @Component({
   selector: 'app-search',
@@ -15,11 +20,14 @@ export class SearchComponent implements OnInit {
   userGroup: FormGroup;
   users: IFullUser[];
   searchUser: string = '';
-  concatParams: string = ''
+  concatParams: string = '';
+
+  @Select(UserState.getUsers) users$: Observable<IFullUser[]>
 
   constructor(private fb: FormBuilder,
               private userService: UserService,
-              private toastr: ToastrService) { }
+              private toastr: ToastrService,
+              private store: Store) { }
 
   ngOnInit(): void {
     this.userGroup = this.fb.group({
@@ -59,6 +67,9 @@ export class SearchComponent implements OnInit {
     if(event){
       this.userService.getAllUsers()
         .pipe(
+          untilDestroyed(this),
+          tap(users => this.store.dispatch(new AddUsers(users))),
+          tap(_ => this.users$),
           untilDestroyed(this)
         )
         .subscribe(users => {
@@ -74,10 +85,13 @@ export class SearchComponent implements OnInit {
     if(!this.concatParams){
       this.userService.getAllUsers()
         .pipe(
+          untilDestroyed(this),
+          tap(users => this.store.dispatch(new AddUsers(users))),
+          tap(_ => this.users$),
           untilDestroyed(this)
         )
         .subscribe(users => {
-          this.users = users;
+          this.users = users
         }, error => this.toastr.error('Something went wrong'))
     } else {
       this.userService.getUserByQueryParams(this.concatParams)

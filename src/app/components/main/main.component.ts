@@ -8,6 +8,11 @@ import {ToastrService} from "ngx-toastr";
 import {UserService} from "../../services/user.service";
 import {MatDialog} from "@angular/material/dialog";
 import {LogoutModalComponent} from "../logout-modal/logout-modal.component";
+import {Select, Store} from "@ngxs/store";
+import {AddFullUser} from "../../store/actions/users.actions";
+import {UserState} from "../../store/states/users.state";
+import {Observable} from "rxjs";
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main',
@@ -17,24 +22,32 @@ import {LogoutModalComponent} from "../logout-modal/logout-modal.component";
 @UntilDestroy()
 export class MainComponent implements OnInit {
   user: IFullUser;
+
+  @Select(UserState.getFullUser) fullUser$: Observable<IFullUser>
+
   constructor(private dataTransfer: DataService,
               private userService: UserService,
               private tokenService: TokenService,
               private router: Router,
               private toastr: ToastrService,
-              private dialog: MatDialog) { }
+              private dialog: MatDialog,
+              private store: Store) { }
 
   ngOnInit(): void {
     const decodedToken = this.tokenService.decodeToken();
     const token = this.tokenService.getToken();
 
     if(!token) return;
+
     this.userService.getUserByEmail(decodedToken.sub, token)
       .pipe(
+        untilDestroyed(this),
+        tap(user => this.store.dispatch(new AddFullUser(user))),
+        tap(_ => this.fullUser$),
         untilDestroyed(this)
       )
       .subscribe(user => {
-        this.user = user;
+        this.fullUser$.subscribe(fullUser => this.user = fullUser);
     }, error => this.toastr.error('Something went wrong'))
   }
 

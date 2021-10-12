@@ -10,6 +10,8 @@ import {
 import {Router} from "@angular/router";
 import {DataService} from "../../services/data.service";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
+import {Store} from "@ngxs/store";
+import {AddOneUser} from "../../store/actions/users.actions";
 
 @Component({
   selector: 'app-main-info',
@@ -21,7 +23,8 @@ export class MainInfoComponent {
   userMainData: FormGroup;
   constructor(private router: Router,
               private fb: FormBuilder,
-              private dataTransfer: DataService) {
+              private dataTransfer: DataService,
+              private store: Store) {
 
     this.userMainData = fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern]],
@@ -49,12 +52,9 @@ export class MainInfoComponent {
      this.userMainData.markAllAsTouched()
    }
    if(this.userMainData.valid) {
-     this.dataTransfer.store
-       .pipe(
-         untilDestroyed(this)
-       )
-       .subscribe(value => value.push(this.userMainData.getRawValue())) // ...
-     this.router.navigate(['addressInformation'])
+     const user = {...this.userMainData.getRawValue()};
+     this.store.dispatch(new AddOneUser(user));
+     this.router.navigate(['addressInformation']);
    }
   }
 }

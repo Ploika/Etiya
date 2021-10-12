@@ -9,6 +9,10 @@ import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import { ToastrService } from 'ngx-toastr';
 import {ICountries} from "../../models/countries";
 import {IUserAddress} from "../../models/userAddress";
+import {Observable} from "rxjs";
+import {Select, Store} from "@ngxs/store";
+import {UserState} from "../../store/states/users.state";
+import {AddOneUser} from "../../store/actions/users.actions";
 
 @Component({
   selector: 'app-address-information',
@@ -23,11 +27,14 @@ export class AddressInformationComponent implements OnInit {
   user: IUser;
   countries: ICountries[];
 
+  @Select(UserState.getOneUser) user$: Observable<IUser>
+
   constructor(private fb: FormBuilder,
               private dataTransfer: DataService,
               private router: Router,
               private authService: AuthService,
-              private toastr: ToastrService) {
+              private toastr: ToastrService,
+              private store: Store) {
   }
 
   ngOnInit(): void {
@@ -36,11 +43,8 @@ export class AddressInformationComponent implements OnInit {
     this.myGroup = new FormGroup({
       userAddresses: this.userAddresses
     })
-    this.dataTransfer.store
-      .pipe(
-        untilDestroyed(this)
-      )
-      .subscribe(value => this.user = value[0])
+
+    this.user$.subscribe(user => this.user = user);
     this.authService.getAllCountry()
       .pipe(
         untilDestroyed(this)
@@ -63,11 +67,7 @@ export class AddressInformationComponent implements OnInit {
   }
 
   backToPreviousPage(): void {
-    this.dataTransfer.store
-      .pipe(
-        untilDestroyed(this)
-      )
-      .subscribe(value => value.splice(0, 1))
+    this.store.dispatch(new AddOneUser())
     window.history.back();
   }
 
@@ -90,15 +90,16 @@ export class AddressInformationComponent implements OnInit {
       )
       .subscribe(data => {
         this.toastr.success('Created');
-        this.router.navigate(['login'])
+        this.router.navigate(['login']);
+        this.store.dispatch(new AddOneUser());
       }, error => {
         if(error.status === 400){
-          this.toastr.error('Please type valid data')
+          this.toastr.error('Please type valid data');
         } else if (error.status === 401) {
-          this.toastr.error('Something went wrong')
+          this.toastr.error('Something went wrong');
         } else if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-          const errorMessage = error.error
-          this.toastr.error(errorMessage.substr(44))
+          const errorMessage = error.error;
+          this.toastr.error(errorMessage.substr(44));
         }
       })
   }

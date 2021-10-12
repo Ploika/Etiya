@@ -19,6 +19,10 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialogModule} from "@angular/material/dialog";
 import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
 import {AuthGuard} from "./guards/auth.guard";
+import {NgxsModule} from "@ngxs/store";
+import {UserState} from "./store/states/users.state";
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 
 
 
@@ -60,6 +64,11 @@ let routes: Routes = [
     FormsModule,
     MatButtonModule,
     MatDialogModule,
+    NgxsModule.forRoot([
+      UserState
+    ]),
+    NgxsReduxDevtoolsPluginModule.forRoot(),
+    NgxsLoggerPluginModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]
