@@ -8,7 +8,6 @@ import {ToastrService} from "ngx-toastr";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
 import {ICountries} from "../../models/countries";
-import {IUserAddress} from "../../models/userAddress";
 
 @Component({
   selector: 'app-user-details',
@@ -28,7 +27,7 @@ export class UserDetailsComponent implements OnInit {
   countries: ICountries[];
 
   @Output()
-  lift = new EventEmitter()
+  lift = new EventEmitter<boolean>();
 
   constructor(private fb: FormBuilder,
               private tokenService: TokenService,
@@ -38,10 +37,10 @@ export class UserDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.userDetailsGroup = this.fb.group({
-      firstName: [this.user.firstName, [Validators.required]],
-      lastName: [this.user.lastName, [Validators.required]],
+      firstName: [this.user.firstName, [Validators.required, Validators.minLength(2), Validators.pattern]],
+      lastName: [this.user.lastName, [Validators.required, Validators.minLength(2), Validators.pattern]],
       userName: [this.user.userName, [Validators.required]],
-      phone: [this.user.phone, [Validators.required]],
+      phone: [this.user.phone, [Validators.required, Validators.pattern]],
       email: [this.user.email, [Validators.required, Validators.email]],
       userAddress: this.userAddresses
     })
@@ -64,10 +63,10 @@ export class UserDetailsComponent implements OnInit {
       .subscribe(countries => this.countries = countries.data)
   }
 
-  get getFormControls(): any {
+  get getFormControls() { // make 1 function
     return this.userDetailsGroup.controls
   }
-  get getAddressFormControls(): any {
+  get getAddressFormControls(): any{ //make 1 function
     return this.userAddresses.controls
   }
 
@@ -100,9 +99,8 @@ export class UserDetailsComponent implements OnInit {
   }
 
   updateUser() {
-    this.user = {...this.user, ...this.userDetailsGroup.value}
-    this.requestForUpdateUser()
-    console.log(this.user)
+    this.user = {...this.user, ...this.userDetailsGroup.value};
+    this.requestForUpdateUser();
   }
 
   cancelEditing() {
@@ -114,7 +112,7 @@ export class UserDetailsComponent implements OnInit {
     let dialogRef = this.dialog.open(DialogDeleteComponent);
 
     dialogRef.afterClosed().subscribe(result => {
-      if(result === 'true' && (this.user.id && token)){
+      if(+result && this.user.id && token){
         this.userService.deleteUserById(this.user.id, token)
           .pipe(
             untilDestroyed(this)
@@ -129,22 +127,22 @@ export class UserDetailsComponent implements OnInit {
 
 
   editUserAddress(i: number): void {
-    this.indexEditingUserAddresses.push(i)
+    this.indexEditingUserAddresses = [...this.indexEditingUserAddresses, i];
   }
 
   cancelUserAddressEditing(index: number): void {
 
-    let positionIndex = this.indexEditingUserAddresses.indexOf(index);
+    const positionIndex = this.indexEditingUserAddresses.indexOf(index);
     let confirmArray: number[] = []
 
     Object.keys(this.userAddresses.controls[index].value).find(value => {
       if(this.userAddresses?.controls[index]?.value[value] === '') {
-        confirmArray.push(1)
+        confirmArray = [...confirmArray, 1];
       }
     })
     if(confirmArray.length === 5){
-        this.userAddresses.controls.pop();
-        this.indexEditingUserAddresses.pop();
+      this.userAddresses.controls.splice(index, 1);
+      this.indexEditingUserAddresses.splice(positionIndex, 1);
     } else {
       this.indexEditingUserAddresses.splice(positionIndex, 1);
       this.userAddresses.controls[index].patchValue(this.user.userAddress[index]);

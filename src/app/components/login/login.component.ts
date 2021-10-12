@@ -13,7 +13,7 @@ import {TokenService} from "../../services/token.service";
 @UntilDestroy()
 export class LoginComponent implements OnInit {
   loginGroup: FormGroup;
-  token: string
+  token: string;
   constructor(private fb: FormBuilder,
               private authService: AuthService,
               private router: Router,
@@ -26,8 +26,8 @@ export class LoginComponent implements OnInit {
     })
   }
 
-  get getFormControls(): any {
-    return this.loginGroup.controls
+  get getFormControls() {
+    return this.loginGroup.controls;
   }
 
   loginUser(): void {
@@ -37,10 +37,14 @@ export class LoginComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe(response => {
-      if(response.token) this.tokenService.setToken(response.token)
+      if(response.token) {
+        this.tokenService.setToken(response.token);
+      }
       this.router.navigate(['main'])
     }, error => {
-      if(error.status === 401) this.router.navigate(['mainInfo'])
+      if(error.status === 401) {
+        this.router.navigate(['mainInfo']);
+      }
     })
   }
 }

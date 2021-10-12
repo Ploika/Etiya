@@ -22,13 +22,6 @@ export class SearchComponent implements OnInit {
               private toastr: ToastrService) { }
 
   ngOnInit(): void {
-    this.initFormGroup();
-  }
-
-  backToPreviousPage() {
-    window.history.back();
-  }
-  initFormGroup(): void {
     this.userGroup = this.fb.group({
       firstName: [''],
       lastName: [''],
@@ -38,11 +31,15 @@ export class SearchComponent implements OnInit {
     })
   }
 
+  backToPreviousPage() {
+    window.history.back();
+  }
+
   clearFormGroup(): void {
-   this.initFormGroup();
+   this.userGroup.reset();
    this.searchUser = '';
    this.users = [];
-    this.concatParams = '';
+   this.concatParams = '';
   }
 
   getUserByQueryParams(): void {
@@ -68,13 +65,13 @@ export class SearchComponent implements OnInit {
           this.users = users
         }, error => this.toastr.error('Something went wrong'))
 
-      this.initFormGroup()
+      this.userGroup.reset();
       this.concatParams = '';
     }
   }
 
   dynamicRequest(): void {
-    if(this.concatParams === ''){
+    if(!this.concatParams){
       this.userService.getAllUsers()
         .pipe(
           untilDestroyed(this)

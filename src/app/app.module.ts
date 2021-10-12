@@ -18,6 +18,7 @@ import { DialogDeleteComponent } from './components/dialog-delete/dialog-delete.
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogModule} from "@angular/material/dialog";
 import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
+import {AuthGuard} from "./guards/auth.guard";
 
 
 
@@ -26,8 +27,8 @@ let routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'mainInfo', component: MainInfoComponent},
   {path: 'addressInformation', component: AddressInformationComponent},
-  {path: 'main', component: MainComponent},
-  {path: 'search', component: SearchComponent}
+  {path: 'main', component: MainComponent, canActivate: [AuthGuard]},
+  {path: 'search', component: SearchComponent, canActivate: [AuthGuard]}
 ]
 @NgModule({
   declarations: [

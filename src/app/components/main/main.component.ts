@@ -41,7 +41,7 @@ export class MainComponent implements OnInit {
   logout() {
     let dialogRef = this.dialog.open(LogoutModalComponent);
     dialogRef.afterClosed().subscribe(result => {
-      if(result === 'true') {
+      if(+result) {
         this.tokenService.removeToken();
         this.router.navigate(['login'])
       }

@@ -48,8 +48,8 @@ export class AddressInformationComponent implements OnInit {
       .subscribe(countries => this.countries = countries.data)
   }
 
-  get getFormControls(): any {
-    return this.addressGroup.controls
+  get getFormControls() {
+    return this.addressGroup.controls;
   }
 
   initFormGroup(): FormGroup{
@@ -67,19 +67,19 @@ export class AddressInformationComponent implements OnInit {
       .pipe(
         untilDestroyed(this)
       )
-      .subscribe(value => value.pop())
+      .subscribe(value => value.splice(0, 1))
     window.history.back();
   }
 
 
   saveData(): void {
     let fullUser: IFullUser = {
-      email: this.user?.email,
-      firstName: this.user?.firstName,
-      lastName: this.user?.lastName,
-      phone: this.user?.phone,
-      userName: this.user?.userName,
-      password: this.user?.password,
+      email: this.user.email,
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+      phone: this.user.phone,
+      userName: this.user.userName,
+      password: this.user.password,
       userAddress: (this.userAddresses.value as Array<IUserAddress>).map(value => {
         return {...value, postalCode: +value.postalCode}
       })

@@ -28,14 +28,14 @@
           <ng-container *ngIf="editing">
             <td>
               <div class="md-form">
-                <input mdbInput type="text" class="form-control" placeholder="first name" formControlName="firstName">
-                <span class="error_message" *ngIf="getFormControls.firstName.invalid">field required</span>
+                <input mdbInput type="text" class="form-control" pattern="[a-zA-Z ]*" placeholder="first name" formControlName="firstName">
+                <span class="error_message" *ngIf="getFormControls.firstName.invalid">field required, min length 2, only letters</span>
               </div>
             </td>
             <td>
               <div class="md-form">
-                <input mdbInput type="text" class="form-control" placeholder="last name" formControlName="lastName">
-                <span class="error_message" *ngIf="getFormControls.lastName.invalid">field required</span>
+                <input mdbInput type="text" class="form-control" pattern="[a-zA-Z ]*" placeholder="last name" formControlName="lastName">
+                <span class="error_message" *ngIf="getFormControls.lastName.invalid">field required, min length 2, only letters</span>
               </div>
             </td>
             <td>
@@ -46,8 +46,8 @@
             </td>
             <td>
               <div class="md-form">
-                <input mdbInput type="text" class="form-control" placeholder="phone" formControlName="phone">
-                <span class="error_message" *ngIf="getFormControls.phone.invalid">field required</span>
+                <input mdbInput type="text" class="form-control" pattern="^[0-9 +]*" placeholder="phone" formControlName="phone">
+                <span class="error_message" *ngIf="getFormControls.phone.invalid">field required, without letters</span>
               </div>
             </td>
             <td>

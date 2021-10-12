@@ -17,26 +17,24 @@ import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
   styleUrls: ['./main-info.component.css']
 })
 @UntilDestroy()
-export class MainInfoComponent implements OnInit {
+export class MainInfoComponent {
   userMainData: FormGroup;
   constructor(private router: Router,
               private fb: FormBuilder,
               private dataTransfer: DataService) {
 
     this.userMainData = fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.pattern]],
       userName: ['', [Validators.required, Validators.minLength(2)]],
-      phone: ['', [Validators.required, Validators.minLength(2)]],
+      phone: ['+380', [Validators.required, Validators.minLength(2), Validators.pattern]],
       email: ['', [Validators.required, Validators.email, Validators.minLength(2)]],
       password: ['', [Validators.required, Validators.minLength(4)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(4)]]
     },  { validators: this.checkPasswords })
   }
 
-  ngOnInit(): void {
-  }
-  get getFormControls(): any {
+  get getFormControls() {
     return this.userMainData.controls
   }
 
@@ -47,7 +45,7 @@ export class MainInfoComponent implements OnInit {
   }
 
   sendData(): void{
-   if (!this.userMainData.valid) {
+   if (this.userMainData.invalid) {
      this.userMainData.markAllAsTouched()
    }
    if(this.userMainData.valid) {
@@ -55,7 +53,7 @@ export class MainInfoComponent implements OnInit {
        .pipe(
          untilDestroyed(this)
        )
-       .subscribe(value => value.push(this.userMainData.getRawValue()))
+       .subscribe(value => value.push(this.userMainData.getRawValue())) // ...
      this.router.navigate(['addressInformation'])
    }
   }
