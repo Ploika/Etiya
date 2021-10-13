@@ -122,7 +122,7 @@
                       <option value="Shipment_Address">Shipment address</option>
                       <option value="Billing_Address">Billing address</option>
                     </select>
-                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.addressType.status === 'INVALID'">field required</span>
+                    <span class="error_message" *ngIf="getAddressFormControls[i].controls.addressType.invalid">field required</span>
                   </div>
                 </td>
                 <td>
@@ -164,7 +164,7 @@
                   </div>
                   <div *ngIf="indexEditingUserAddresses.includes(i)">
                     <button type="button"
-                            (click)="updateUserAddress(i)"
+                            (click)="updateUserAddress()"
                             [disabled]="!this.userAddresses.controls[i].valid"
                             class="btn btn-success"
                     >Save</button>

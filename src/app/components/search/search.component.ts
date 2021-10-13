@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup} from "@angular/forms";
-import {UserService} from "../../services/user.service";
 import {IFullUser} from "../../models/fullUser";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
 import {Select, Store} from "@ngxs/store";
 import {Observable} from "rxjs";
 import {UserState} from "../../store/states/users.state";
-import { tap } from 'rxjs/operators';
 import {AddUsers} from "../../store/actions/users.actions";
 
 @Component({
@@ -25,11 +23,14 @@ export class SearchComponent implements OnInit {
   @Select(UserState.getUsers) users$: Observable<IFullUser[]>
 
   constructor(private fb: FormBuilder,
-              private userService: UserService,
               private toastr: ToastrService,
               private store: Store) { }
 
   ngOnInit(): void {
+    this.initFormGroup();
+  }
+
+  initFormGroup(): void {
     this.userGroup = this.fb.group({
       firstName: [''],
       lastName: [''],
@@ -44,13 +45,27 @@ export class SearchComponent implements OnInit {
   }
 
   clearFormGroup(): void {
-   this.userGroup.reset();
+   this.initFormGroup();
    this.searchUser = '';
    this.users = [];
    this.concatParams = '';
   }
 
-  getUserByQueryParams(): void {
+  catchUser(event: boolean) {
+    if(event){
+      this.store.dispatch(new AddUsers());
+      this.users$
+        .pipe(
+          untilDestroyed(this)
+        )
+        .subscribe(users => this.users = [...users])
+
+      this.initFormGroup();
+      this.concatParams = '';
+    }
+  }
+
+  dynamicRequest(): void {
     const userParams = this.userGroup.getRawValue();
 
     Object.keys(userParams).forEach(key => {
@@ -59,48 +74,20 @@ export class SearchComponent implements OnInit {
         this.concatParams += str
       }
     })
-
-    this.dynamicRequest();
-  }
-
-  catchUser(event: boolean) {
-    if(event){
-      this.userService.getAllUsers()
-        .pipe(
-          untilDestroyed(this),
-          tap(users => this.store.dispatch(new AddUsers(users))),
-          tap(_ => this.users$),
-          untilDestroyed(this)
-        )
-        .subscribe(users => {
-          this.users = users
-        }, error => this.toastr.error('Something went wrong'))
-
-      this.userGroup.reset();
-      this.concatParams = '';
-    }
-  }
-
-  dynamicRequest(): void {
     if(!this.concatParams){
-      this.userService.getAllUsers()
-        .pipe(
-          untilDestroyed(this),
-          tap(users => this.store.dispatch(new AddUsers(users))),
-          tap(_ => this.users$),
-          untilDestroyed(this)
-        )
-        .subscribe(users => {
-          this.users = users
-        }, error => this.toastr.error('Something went wrong'))
-    } else {
-      this.userService.getUserByQueryParams(this.concatParams)
+      this.store.dispatch(new AddUsers());
+      this.users$
         .pipe(
           untilDestroyed(this)
         )
-        .subscribe(users => {
-          this.users = users;
-        }, error => this.toastr.error('Something went wrong'))
+        .subscribe(users => this.users = [...users])
+    } else  {
+      this.store.dispatch(new AddUsers(this.concatParams));
+      this.users$
+        .pipe(
+          untilDestroyed(this)
+        )
+        .subscribe(users => this.users = [...users])
     }
   }
 }

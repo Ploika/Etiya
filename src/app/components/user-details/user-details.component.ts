@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {IFullUser} from "../../models/fullUser";
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import { FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {TokenService} from "../../services/token.service";
 import {UserService} from "../../services/user.service";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
@@ -8,6 +8,13 @@ import {ToastrService} from "ngx-toastr";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
 import {ICountries} from "../../models/countries";
+import {Select, Store} from "@ngxs/store";
+import {UpdateUserById} from "../../store/actions/users.actions";
+import {Observable} from "rxjs";
+import { UserState } from 'src/app/store/states/users.state';
+import {IErrorResponse} from "../../models/errorResponse";
+import {filter} from "rxjs/operators";
+
 
 @Component({
   selector: 'app-user-details',
@@ -28,12 +35,14 @@ export class UserDetailsComponent implements OnInit {
 
   @Output()
   lift = new EventEmitter<boolean>();
+  @Select(UserState.getUpdateUserResponse) userUpdateResponse$: Observable<IFullUser | IErrorResponse>
 
   constructor(private fb: FormBuilder,
               private tokenService: TokenService,
               private userService: UserService,
               private toastr: ToastrService,
-              public dialog: MatDialog) { }
+              public dialog: MatDialog,
+              private store: Store) { }
 
   ngOnInit(): void {
     this.userDetailsGroup = this.fb.group({
@@ -63,10 +72,10 @@ export class UserDetailsComponent implements OnInit {
       .subscribe(countries => this.countries = countries.data)
   }
 
-  get getFormControls() { // make 1 function
+  get getFormControls() {
     return this.userDetailsGroup.controls
   }
-  get getAddressFormControls(): any{ //make 1 function
+  get getAddressFormControls(): any {
     return this.userAddresses.controls
   }
 
@@ -76,25 +85,79 @@ export class UserDetailsComponent implements OnInit {
 
   requestForUpdateUser(): void{
     const token = this.tokenService.getToken();
+
     if(token && this.user.id) {
-      this.userService.updateUserById(this.user, this.user.id, token)
-        .pipe(
-          untilDestroyed(this)
-        )
-        .subscribe(_ => {
-          this.toastr.success('Success');
-          this.lift.emit(true);
-          this.editing = false;
-        }, error => {
-          if(error.status === 400) {
-            this.toastr.error('Please fill valid data')
-          } else  if(error.status === 401){
-            this.toastr.error('Unauthorized');
-          } else  if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')){
-            const errorMessage = error.error;
-            this.toastr.error(errorMessage.substr(44));
-          }
-        })
+      this.store.dispatch(new UpdateUserById({user: this.user, token: token}))
+
+      this.userUpdateResponse$
+        .subscribe(response => {
+        console.log(response)
+        if(response as IFullUser) {
+          console.log('user response')
+        } else if(response as IErrorResponse){
+          console.log('error response')
+        }
+
+        // if(response as IFullUser){
+        //         this.lift.emit(true);
+        //         this.editing = false;
+        // } else {
+        //   if(response.status === 400 && response.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
+        //     const errorMessage = response.error;
+        //     this.toastr.error(errorMessage.substr(44));
+        //   } else  if(response.status === 401){
+        //     this.toastr.error('Unauthorized');
+        //   } else  if(response.status === 400){
+        //     this.toastr.error('Please fill valid data')
+        //   }
+        // }
+      });
+
+
+      // this.store.dispatch(new UpdateUserById({user: this.user, token: token}))
+      //   .pipe(
+      //     untilDestroyed(this),
+      //     // catchError(error => {
+      //     //   console.log(error, 'error');
+      //     //   return throwError(error)
+      //     // })
+      //   )
+      //   .subscribe( {
+      //     next: res => {
+      //       console.log(res, 'res')
+      //       this.lift.emit(true);
+      //       this.editing = false;
+      //     },
+      //     error: err => console.log(err, 'err')
+      // })
+
+      // this.actions$
+      //   .pipe(
+      //     ofActionErrored(UpdateUserById)
+      //   )
+      //   .subscribe(_ => {
+      //     this.lift.emit(true);
+      //     this.editing = false;
+      //     console.log(_, 'next')
+      //   }, error => console.log(error, 'error'))
+
+      // this.userService.updateUserById(this.user, this.user.id, token)
+      //   .pipe(
+      //     untilDestroyed(this)
+      //   )
+      //   .subscribe(_ => {
+      //     console.log(_)
+      //     this.toastr.success('Success');
+      //     this.lift.emit(true);
+      //     this.editing = false;
+      //   }, error => {
+      //     if(error.status === 400 && error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
+      //       const errorMessage = error.error;
+      //       this.toastr.error(errorMessage.substr(44));
+      //     } else  if(error.status === 401){
+      //       this.toastr.error('Unauthorized');
+      //     }
+      //   })
     }
   }
 
@@ -150,7 +213,7 @@ export class UserDetailsComponent implements OnInit {
 
   }
 
-  updateUserAddress(index: number): void {
+  updateUserAddress(): void {
     this.user.userAddress.map((value) => {
       return {...value, postalCode: +value.postalCode}
     })
@@ -161,7 +224,7 @@ export class UserDetailsComponent implements OnInit {
   deleteUserAddress(index: number): void {
     let dialogRef = this.dialog.open(DialogDeleteComponent);
     dialogRef.afterClosed().subscribe(result => {
-      if(result === 'true') {
+      if(+result) {
         this.user.userAddress.splice(index, 1);
         this.requestForUpdateUser();
       }

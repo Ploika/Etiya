@@ -12,7 +12,7 @@ import {IUserAddress} from "../../models/userAddress";
 import {Observable} from "rxjs";
 import {Select, Store} from "@ngxs/store";
 import {UserState} from "../../store/states/users.state";
-import {AddOneUser} from "../../store/actions/users.actions";
+import {AddOneUser, CreateUser} from "../../store/actions/users.actions";
 
 @Component({
   selector: 'app-address-information',
@@ -84,24 +84,36 @@ export class AddressInformationComponent implements OnInit {
         return {...value, postalCode: +value.postalCode}
       })
     }
-    this.authService.createUser(fullUser)
+    // this.authService.createUser(fullUser)
+    //   .pipe(
+    //     untilDestroyed(this)
+    //   )
+    //   .subscribe(data => {
+    //     this.toastr.success('Created');
+    //     this.router.navigate(['login']);
+    //     this.store.dispatch(new AddOneUser());
+    //   }, error => {
+    //     if(error.status === 400){
+    //       this.toastr.error('Please type valid data');
+    //     } else if (error.status === 401) {
+    //       this.toastr.error('Something went wrong');
+    //     } else if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
+    //       const errorMessage = error.error;
+    //       this.toastr.error(errorMessage.substr(44));
+    //     }
+    //   })
+    this.store.dispatch(new CreateUser(fullUser))
       .pipe(
         untilDestroyed(this)
       )
-      .subscribe(data => {
+      .subscribe(_ => {
         this.toastr.success('Created');
-        this.router.navigate(['login']);
-        this.store.dispatch(new AddOneUser());
+        this.router.navigate(['login'])
       }, error => {
-        if(error.status === 400){
-          this.toastr.error('Please type valid data');
-        } else if (error.status === 401) {
-          this.toastr.error('Something went wrong');
-        } else if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-          const errorMessage = error.error;
-          this.toastr.error(errorMessage.substr(44));
-        }
+        console.log(error)
+        this.toastr.error('Something went wrong')
       })
+    // this.store.dispatch(new AddOneUser());
   }
 
   addAnotherAddress(): void {
