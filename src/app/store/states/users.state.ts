@@ -1,14 +1,21 @@
 import {State, Action, StateContext, Selector} from "@ngxs/store";
 import {UsersState} from "../../models/usersStateModel";
 import {USERS_DEFAULTS as defaults}  from "../../constants/usersDefaults";
-import {AddFullUser, AddOneUser, AddUsers, CreateUser, RemoveUsers, UpdateUserById} from "../actions/users.actions";
+import {
+  AddFullUser,
+  AddOneUser,
+  AddUsers,
+  CreateUser, DeleteUserById, GetUserByEmail, LoginUser,
+  RemoveUsers,
+  UpdateUserById
+} from "../actions/users.actions";
 import {UserService} from "../../services/user.service";
 import {tap} from "rxjs/operators";
 import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {Injectable} from "@angular/core";
 import { ToastrService } from "ngx-toastr";
 import {AuthService} from "../../services/auth.service";
-import {Router} from "@angular/router";
+import {of} from "rxjs";
 
 
 @State<UsersState>({
@@ -22,8 +29,7 @@ export class UserState {
 
   constructor(private userService: UserService,
               private toastr: ToastrService,
-              private authService: AuthService,
-              private router: Router) {
+              private authService: AuthService) {
   }
 
   @Selector()
@@ -40,7 +46,11 @@ export class UserState {
   }
   @Selector()
   static getUpdateUserResponse(state: UsersState){
-    return state.updateUserResponse
+    return state.updateUserResponse;
+  }
+  @Selector()
+  static getLoginResponse(state: UsersState){
+    return state.loginResponse;
   }
   @Action(AddUsers)
   addUsers({ patchState } : StateContext<UsersState>, {payload}: AddUsers) {
@@ -52,7 +62,7 @@ export class UserState {
             users: [...users]
           }) )
         )
-        .subscribe(_ => {})
+        .subscribe()
     } else {
       this.userService.getAllUsers()
         .pipe(
@@ -61,7 +71,7 @@ export class UserState {
             users: [...users]
           }))
         )
-        .subscribe(_ => {})
+        .subscribe()
     }
   }
 
@@ -88,52 +98,82 @@ export class UserState {
       fullUser: {...payload}
     })
   }
+  @Action(GetUserByEmail)
+  getUserByEmail(ctx: StateContext<UsersState>, { payload }: GetUserByEmail){
+    return this.userService.getUserByEmail(payload.email, payload.token)
+      .pipe(
+        untilDestroyed(this)
+      )
+      .subscribe(user => {
+        ctx.patchState({
+          fullUser: {...user}
+        })
+      })
+  }
 
   @Action(UpdateUserById)
   updateUserById({ patchState }: StateContext<UsersState>, { payload }: UpdateUserById){
     if(payload.user.id) {
-      this.userService.updateUserById(payload.user, payload.user.id, payload.token).pipe(
+      return  this.userService.updateUserById(payload.user, payload.user.id, payload.token)
+        .pipe(
         tap({
-          next: res => {
-            patchState({
-              updateUserResponse: {...res}
-            })
-          },
+          next: () => {},
           error: error => {
             patchState({
               updateUserResponse: {...error}
             })
           }
         })
-      ).subscribe()
-      // this.userService.updateUserById(payload.user, payload.user.id, payload.token)
-      //   // .pipe(
-      //   //   untilDestroyed(this),
-      //   // )
-      //   .subscribe({
-      //     next: (response) => {
-      //       patchState({
-      //         updateUserResponse: {...response}
-      //       })
-      //     },
-      //     error: (error) => {
-      //       patchState({
-      //         updateUserResponse: {...error}
-      //       })
-      //       // if(error.status === 400 && error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-      //       //   const errorMessage = error.error;
-      //       //   this.toastr.error(errorMessage.substr(44));
-      //       // } else  if(error.status === 401){
-      //       //   this.toastr.error('Unauthorized');
-      //       // } else  if(error.status === 400){
-      //       //   this.toastr.error('Please fill valid data')
-      //       // }
-      //     }
-      //   })
+      )
+    } else {
+      return of(null)
     }
   }
+  @Action(DeleteUserById)
+  deleteUserById(ctx: StateContext<UsersState>, { payload }: DeleteUserById){
+    return this.userService.deleteUserById(payload.id, payload.token)
+      .pipe(
+        tap({
+          next: () => {},
+          error: error => {
+            ctx.patchState({
+              updateUserResponse: {...error}
+            })
+          }
+        })
+      )
+  }
   @Action(CreateUser)
-  createUser(stateStateContext: StateContext<UsersState>, { payload }: CreateUser) {
-    this.authService.createUser(payload)
+  createUser(ctx: StateContext<UsersState>, { payload }: CreateUser) {
+    return this.authService.createUser(payload)
+      .pipe(
+        tap({
+          next: () => {},
+          error: error => {
+            ctx.patchState({
+              updateUserResponse: {...error}
+            })
+          }
+        })
+      )
+  }
+
+  @Action(LoginUser)
+  loginUser(ctx: StateContext<UsersState>, { payload }: LoginUser){
+    return this.authService.login(payload)
+      .pipe(
+        tap({
+          next: (response) => {
+            ctx.patchState({
+              loginResponse: {...response}
+            })
+          },
+          error: error => {
+            ctx.patchState({
+              updateUserResponse: {...error}
+            })
+          }
+        })
+      )
   }
 }

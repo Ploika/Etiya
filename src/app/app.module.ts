@@ -23,6 +23,7 @@ import {NgxsModule} from "@ngxs/store";
 import {UserState} from "./store/states/users.state";
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import {CountriesState} from "./store/states/countries.state";
 
 
 
@@ -65,7 +66,8 @@ let routes: Routes = [
     MatButtonModule,
     MatDialogModule,
     NgxsModule.forRoot([
-      UserState
+      UserState,
+      CountriesState
     ]),
     NgxsReduxDevtoolsPluginModule.forRoot(),
     NgxsLoggerPluginModule.forRoot()

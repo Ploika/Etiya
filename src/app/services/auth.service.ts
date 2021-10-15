@@ -6,6 +6,7 @@ import {ILoginUser} from "../models/loginUser";
 import {IFullUser} from "../models/fullUser";
 import {urls} from "../constants";
 import {ICountryResponse} from "../models/countryResponse";
+import {ILoginResponse} from "../models/loginResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +15,8 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(user: ILoginUser): Observable<ILoginUser>{
-    return this.http.post<ILoginUser>(urls.login, user)
+  login(user: ILoginUser): Observable<ILoginResponse>{
+    return this.http.post<ILoginResponse>(urls.login, user)
       .pipe(
         catchError(this.errorHandler)
       )

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,7 +9,6 @@ import {
 } from "@angular/forms";
 import {Router} from "@angular/router";
 import {DataService} from "../../services/data.service";
-import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {Store} from "@ngxs/store";
 import {AddOneUser} from "../../store/actions/users.actions";
 
@@ -18,7 +17,6 @@ import {AddOneUser} from "../../store/actions/users.actions";
   templateUrl: './main-info.component.html',
   styleUrls: ['./main-info.component.css']
 })
-@UntilDestroy()
 export class MainInfoComponent {
   userMainData: FormGroup;
   constructor(private router: Router,

@@ -8,12 +8,13 @@ import {ToastrService} from "ngx-toastr";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
 import {ICountries} from "../../models/countries";
-import {Select, Store} from "@ngxs/store";
-import {UpdateUserById} from "../../store/actions/users.actions";
+import {Actions, ofActionErrored, ofActionSuccessful, Select, Store} from "@ngxs/store";
+import {DeleteUserById, UpdateUserById} from "../../store/actions/users.actions";
 import {Observable} from "rxjs";
 import { UserState } from 'src/app/store/states/users.state';
-import {IErrorResponse} from "../../models/errorResponse";
-import {filter} from "rxjs/operators";
+import {CountriesState} from "../../store/states/countries.state";
+import {ICountryResponse} from "../../models/countryResponse";
+import {GetAllCountries} from "../../store/actions/countries.actions";
 
 
 @Component({
@@ -35,24 +36,18 @@ export class UserDetailsComponent implements OnInit {
 
   @Output()
   lift = new EventEmitter<boolean>();
-  @Select(UserState.getUpdateUserResponse) userUpdateResponse$: Observable<IFullUser | IErrorResponse>
+  @Select(CountriesState.getCountries) countries$: Observable<ICountryResponse>;
 
   constructor(private fb: FormBuilder,
               private tokenService: TokenService,
               private userService: UserService,
               private toastr: ToastrService,
               public dialog: MatDialog,
-              private store: Store) { }
+              private store: Store,
+              private actions$: Actions) { }
 
   ngOnInit(): void {
-    this.userDetailsGroup = this.fb.group({
-      firstName: [this.user.firstName, [Validators.required, Validators.minLength(2), Validators.pattern]],
-      lastName: [this.user.lastName, [Validators.required, Validators.minLength(2), Validators.pattern]],
-      userName: [this.user.userName, [Validators.required]],
-      phone: [this.user.phone, [Validators.required, Validators.pattern]],
-      email: [this.user.email, [Validators.required, Validators.email]],
-      userAddress: this.userAddresses
-    })
+   this.initUserDetailsGroup()
 
     this.user.userAddress.forEach((userAddress) => {
       this.userAddressGroup = this.fb.group({
@@ -64,12 +59,23 @@ export class UserDetailsComponent implements OnInit {
       })
       this.userAddresses.push(this.userAddressGroup);
     })
-
-    this.userService.getAllCountry()
+    this.store.dispatch(new GetAllCountries())
+    this.countries$
       .pipe(
         untilDestroyed(this)
       )
       .subscribe(countries => this.countries = countries.data)
+  }
+
+  initUserDetailsGroup(): void {
+    this.userDetailsGroup = this.fb.group({
+      firstName: [this.user.firstName, [Validators.required, Validators.minLength(2), Validators.pattern]],
+      lastName: [this.user.lastName, [Validators.required, Validators.minLength(2), Validators.pattern]],
+      userName: [this.user.userName, [Validators.required]],
+      phone: [this.user.phone, [Validators.required, Validators.pattern]],
+      email: [this.user.email, [Validators.required, Validators.email]],
+      userAddress: this.userAddresses
+    })
   }
 
   get getFormControls() {
@@ -89,75 +95,31 @@ export class UserDetailsComponent implements OnInit {
     if(token && this.user.id) {
       this.store.dispatch(new UpdateUserById({user: this.user, token: token}))
 
-      this.userUpdateResponse$
-        .subscribe(response => {
-        console.log(response)
-        if(response as IFullUser) {
-          console.log('user response')
-        } else if(response as IErrorResponse){
-          console.log('error response')
-        }
+      this.actions$
+        .pipe(
+          ofActionErrored(UpdateUserById)
+        )
+        .subscribe(() => {
+          const response = this.store.selectSnapshot(UserState.getUpdateUserResponse);
+            if(response && response.status === 400 && response.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')){
+              const errorMessage = response.error;
+              this.toastr.error(errorMessage.substr(44));
+            } else if (response && response.status === 401) {
+              this.toastr.error('Something went wrong');
+            } else if(response && response.status === 400) {
+              this.toastr.error('Please type valid data');
+            }
+        })
 
-        // if(response as IFullUser){
-        //         this.lift.emit(true);
-        //         this.editing = false;
-        // } else {
-        //   if(response.status === 400 && response.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-        //     const errorMessage = response.error;
-        //     this.toastr.error(errorMessage.substr(44));
-        //   } else  if(response.status === 401){
-        //     this.toastr.error('Unauthorized');
-        //   } else  if(response.status === 400){
-        //     this.toastr.error('Please fill valid data')
-        //   }
-        // }
-      });
-
-
-      // this.store.dispatch(new UpdateUserById({user: this.user, token: token}))
-      //   .pipe(
-      //     untilDestroyed(this),
-      //     // catchError(error => {
-      //     //   console.log(error, 'error');
-      //     //   return throwError(error)
-      //     // })
-      //   )
-      //   .subscribe( {
-      //     next: res => {
-      //       console.log(res, 'res')
-      //       this.lift.emit(true);
-      //       this.editing = false;
-      //     },
-      //     error: err => console.log(err, 'err')
-      // })
-
-      // this.actions$
-      //   .pipe(
-      //     ofActionErrored(UpdateUserById)
-      //   )
-      //   .subscribe(_ => {
-      //     this.lift.emit(true);
-      //     this.editing = false;
-      //     console.log(_, 'next')
-      //   }, error => console.log(error, 'error'))
-
-      // this.userService.updateUserById(this.user, this.user.id, token)
-      //   .pipe(
-      //     untilDestroyed(this)
-      //   )
-      //   .subscribe(_ => {
-      //     console.log(_)
-      //     this.toastr.success('Success');
-      //     this.lift.emit(true);
-      //     this.editing = false;
-      //   }, error => {
-      //     if(error.status === 400 && error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-      //       const errorMessage = error.error;
-      //       this.toastr.error(errorMessage.substr(44));
-      //     } else  if(error.status === 401){
-      //       this.toastr.error('Unauthorized');
-      //     }
-      //   })
+      this.actions$
+        .pipe(
+        ofActionSuccessful(UpdateUserById)
+      )
+        .subscribe(_ => {
+          this.lift.emit(true);
+          this.editing = false;
+          this.toastr.success('Updated')
+        })
     }
   }
 
@@ -168,22 +130,32 @@ export class UserDetailsComponent implements OnInit {
 
   cancelEditing() {
     this.editing = false;
+    this.initUserDetailsGroup();
   }
 
   deleteUser(): void {
     const token = this.tokenService.getToken();
     let dialogRef = this.dialog.open(DialogDeleteComponent);
-
     dialogRef.afterClosed().subscribe(result => {
-      if(+result && this.user.id && token){
-        this.userService.deleteUserById(this.user.id, token)
+      if(!+result && this.user.id && token){
+        this.store.dispatch(new DeleteUserById({id: this.user.id, token: token}));
+
+        this.actions$
           .pipe(
-            untilDestroyed(this)
+            ofActionErrored(DeleteUserById)
           )
-          .subscribe(response => {
-            this.toastr.success('Deleted');
-            this.lift.emit(true);
-          }, error => this.toastr.error('Something went wrong'))
+          .subscribe(() => {
+            this.toastr.error('Something went wrong')
+          })
+
+        this.actions$
+          .pipe(
+            ofActionSuccessful(DeleteUserById)
+          )
+          .subscribe(() => {
+                this.toastr.success('Deleted');
+                this.lift.emit(true);
+          })
       }
     })
   }

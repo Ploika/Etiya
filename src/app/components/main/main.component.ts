@@ -9,7 +9,7 @@ import {UserService} from "../../services/user.service";
 import {MatDialog} from "@angular/material/dialog";
 import {LogoutModalComponent} from "../logout-modal/logout-modal.component";
 import {Select, Store} from "@ngxs/store";
-import {AddFullUser} from "../../store/actions/users.actions";
+import {AddFullUser, GetUserByEmail} from "../../store/actions/users.actions";
 import {UserState} from "../../store/states/users.state";
 import {Observable} from "rxjs";
 import { tap } from 'rxjs/operators';
@@ -38,17 +38,12 @@ export class MainComponent implements OnInit {
     const token = this.tokenService.getToken();
 
     if(!token) return;
-
-    this.userService.getUserByEmail(decodedToken.sub, token)
+    this.store.dispatch(new GetUserByEmail({email: decodedToken.sub, token}));
+    this.fullUser$
       .pipe(
-        untilDestroyed(this),
-        tap(user => this.store.dispatch(new AddFullUser(user))),
-        tap(_ => this.fullUser$),
         untilDestroyed(this)
       )
-      .subscribe(user => {
-        this.fullUser$.subscribe(fullUser => this.user = fullUser);
-    }, error => this.toastr.error('Something went wrong'))
+      .subscribe(fullUSer => this.user = fullUSer)
   }
 
   logout() {

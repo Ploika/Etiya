@@ -10,9 +10,12 @@ import { ToastrService } from 'ngx-toastr';
 import {ICountries} from "../../models/countries";
 import {IUserAddress} from "../../models/userAddress";
 import {Observable} from "rxjs";
-import {Select, Store} from "@ngxs/store";
+import {Actions, ofActionErrored, ofActionSuccessful, Select, Store} from "@ngxs/store";
 import {UserState} from "../../store/states/users.state";
 import {AddOneUser, CreateUser} from "../../store/actions/users.actions";
+import {GetAllCountries} from "../../store/actions/countries.actions";
+import {ICountryResponse} from "../../models/countryResponse";
+import { CountriesState } from 'src/app/store/states/countries.state';
 
 @Component({
   selector: 'app-address-information',
@@ -27,14 +30,16 @@ export class AddressInformationComponent implements OnInit {
   user: IUser;
   countries: ICountries[];
 
-  @Select(UserState.getOneUser) user$: Observable<IUser>
+  @Select(UserState.getOneUser) user$: Observable<IUser>;
+  @Select(CountriesState.getCountries) countries$: Observable<ICountryResponse>
 
   constructor(private fb: FormBuilder,
               private dataTransfer: DataService,
               private router: Router,
               private authService: AuthService,
               private toastr: ToastrService,
-              private store: Store) {
+              private store: Store,
+              private actions$: Actions) {
   }
 
   ngOnInit(): void {
@@ -44,8 +49,15 @@ export class AddressInformationComponent implements OnInit {
       userAddresses: this.userAddresses
     })
 
-    this.user$.subscribe(user => this.user = user);
-    this.authService.getAllCountry()
+    this.user$
+      .pipe(
+        untilDestroyed(this)
+      )
+      .subscribe(user => this.user = user);
+
+    this.store.dispatch(new GetAllCountries());
+
+    this.countries$
       .pipe(
         untilDestroyed(this)
       )
@@ -71,7 +83,6 @@ export class AddressInformationComponent implements OnInit {
     window.history.back();
   }
 
-
   saveData(): void {
     let fullUser: IFullUser = {
       email: this.user.email,
@@ -84,36 +95,33 @@ export class AddressInformationComponent implements OnInit {
         return {...value, postalCode: +value.postalCode}
       })
     }
-    // this.authService.createUser(fullUser)
-    //   .pipe(
-    //     untilDestroyed(this)
-    //   )
-    //   .subscribe(data => {
-    //     this.toastr.success('Created');
-    //     this.router.navigate(['login']);
-    //     this.store.dispatch(new AddOneUser());
-    //   }, error => {
-    //     if(error.status === 400){
-    //       this.toastr.error('Please type valid data');
-    //     } else if (error.status === 401) {
-    //       this.toastr.error('Something went wrong');
-    //     } else if(error.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')) {
-    //       const errorMessage = error.error;
-    //       this.toastr.error(errorMessage.substr(44));
-    //     }
-    //   })
-    this.store.dispatch(new CreateUser(fullUser))
+
+    this.store.dispatch(new CreateUser(fullUser));
+    this.actions$
       .pipe(
-        untilDestroyed(this)
+        ofActionErrored(CreateUser)
+      )
+      .subscribe(() => {
+        const response = this.store.selectSnapshot(UserState.getUpdateUserResponse);
+        if(response && response.status === 400 && response.error.includes('ua.lviv.GrTask.Exceptions.UserAlreadyExists:')){
+          const errorMessage = response.error;
+          this.toastr.error(errorMessage.substr(44));
+        } else if (response && response.status === 401) {
+          this.toastr.error('Something went wrong');
+        } else if(response && response.status === 400) {
+          this.toastr.error('Please type valid data');
+        }
+      })
+
+    this.actions$
+      .pipe(
+        ofActionSuccessful(CreateUser)
       )
       .subscribe(_ => {
+        this.store.dispatch(new AddOneUser());
         this.toastr.success('Created');
-        this.router.navigate(['login'])
-      }, error => {
-        console.log(error)
-        this.toastr.error('Something went wrong')
+        this.router.navigate(['login']);
       })
-    // this.store.dispatch(new AddOneUser());
   }
 
   addAnotherAddress(): void {

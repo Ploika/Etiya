@@ -1,5 +1,6 @@
 import {IUser} from "../../models/user";
 import {IFullUser} from "../../models/fullUser";
+import {ILoginUser} from "../../models/loginUser";
 
 export  class AddUsers {
   static readonly type = '[USERS] Add'
@@ -28,8 +29,24 @@ export class UpdateUserById {
 
   constructor(public payload: {user: IFullUser, token: string}) {}
 }
+export class DeleteUserById {
+  static readonly type = '[USERS] DeleteUserById'
+
+  constructor(public payload: {id: number, token: string}) {}
+}
+export class GetUserByEmail {
+  static readonly type = '[USERS] GetUserByEmail'
+
+  constructor(public payload: {email: string, token: string}) {}
+}
 export class CreateUser {
   static readonly type = '[USERS] CreateUser'
 
   constructor(public payload: IFullUser) {}
 }
+export class LoginUser {
+  static readonly type = '[USERS] LoginUser'
+
+  constructor( public payload: ILoginUser) {}
+}
+
