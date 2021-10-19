@@ -85,7 +85,7 @@ export class UserState {
   @Action(AddFullUser)
   addFullUser({patchState}: StateContext<UsersState>, { payload }: AddFullUser){
     patchState({
-      fullUser: {...payload}
+      fullUser: payload
     })
   }
   @Action(GetUserByEmail)
