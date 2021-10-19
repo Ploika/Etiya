@@ -3,7 +3,6 @@ import {IFullUser} from "../../models/fullUser";
 import { FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {TokenService} from "../../services/token.service";
 import {UserService} from "../../services/user.service";
-import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogDeleteComponent} from "../dialog-delete/dialog-delete.component";
@@ -15,6 +14,7 @@ import { UserState } from 'src/app/store/states/users.state';
 import {CountriesState} from "../../store/states/countries.state";
 import {ICountryResponse} from "../../models/countryResponse";
 import {GetAllCountries} from "../../store/actions/countries.actions";
+import {switchMap, take} from "rxjs/operators";
 
 
 @Component({
@@ -22,7 +22,7 @@ import {GetAllCountries} from "../../store/actions/countries.actions";
   templateUrl: './user-details.component.html',
   styleUrls: ['./user-details.component.css']
 })
-@UntilDestroy()
+
 export class UserDetailsComponent implements OnInit {
   editing: boolean = false;
 
@@ -47,7 +47,7 @@ export class UserDetailsComponent implements OnInit {
               private actions$: Actions) { }
 
   ngOnInit(): void {
-   this.initUserDetailsGroup()
+   this.initUserDetailsGroup();
 
     this.user.userAddress.forEach((userAddress) => {
       this.userAddressGroup = this.fb.group({
@@ -60,11 +60,11 @@ export class UserDetailsComponent implements OnInit {
       this.userAddresses.push(this.userAddressGroup);
     })
     this.store.dispatch(new GetAllCountries())
-    this.countries$
       .pipe(
-        untilDestroyed(this)
+        take(1),
+        switchMap(() => this.store.selectOnce(CountriesState.getCountries))
       )
-      .subscribe(countries => this.countries = countries.data)
+      .subscribe(countries => this.countries = countries.data);
   }
 
   initUserDetailsGroup(): void {
@@ -93,7 +93,7 @@ export class UserDetailsComponent implements OnInit {
     const token = this.tokenService.getToken();
 
     if(token && this.user.id) {
-      this.store.dispatch(new UpdateUserById({user: this.user, token: token}))
+      this.store.dispatch(new UpdateUserById(this.user, token))
 
       this.actions$
         .pipe(
@@ -138,7 +138,7 @@ export class UserDetailsComponent implements OnInit {
     let dialogRef = this.dialog.open(DialogDeleteComponent);
     dialogRef.afterClosed().subscribe(result => {
       if(!+result && this.user.id && token){
-        this.store.dispatch(new DeleteUserById({id: this.user.id, token: token}));
+        this.store.dispatch(new DeleteUserById(this.user.id, token));
 
         this.actions$
           .pipe(
@@ -189,8 +189,8 @@ export class UserDetailsComponent implements OnInit {
     this.user.userAddress.map((value) => {
       return {...value, postalCode: +value.postalCode}
     })
-    this.user = {...this.user, ...this.userDetailsGroup.value}
-    this.requestForUpdateUser()
+    this.user = {...this.user, ...this.userDetailsGroup.value};
+    this.requestForUpdateUser();
   }
 
   deleteUserAddress(index: number): void {

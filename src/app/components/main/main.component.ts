@@ -8,11 +8,10 @@ import {ToastrService} from "ngx-toastr";
 import {UserService} from "../../services/user.service";
 import {MatDialog} from "@angular/material/dialog";
 import {LogoutModalComponent} from "../logout-modal/logout-modal.component";
-import {Select, Store} from "@ngxs/store";
-import {AddFullUser, GetUserByEmail} from "../../store/actions/users.actions";
+import {Store} from "@ngxs/store";
+import {GetUserByEmail} from "../../store/actions/users.actions";
 import {UserState} from "../../store/states/users.state";
-import {Observable} from "rxjs";
-import { tap } from 'rxjs/operators';
+import {switchMap, take} from 'rxjs/operators';
 
 @Component({
   selector: 'app-main',
@@ -22,8 +21,6 @@ import { tap } from 'rxjs/operators';
 @UntilDestroy()
 export class MainComponent implements OnInit {
   user: IFullUser;
-
-  @Select(UserState.getFullUser) fullUser$: Observable<IFullUser>
 
   constructor(private dataTransfer: DataService,
               private userService: UserService,
@@ -38,12 +35,12 @@ export class MainComponent implements OnInit {
     const token = this.tokenService.getToken();
 
     if(!token) return;
-    this.store.dispatch(new GetUserByEmail({email: decodedToken.sub, token}));
-    this.fullUser$
+    this.store.dispatch(new GetUserByEmail(decodedToken.sub, token))
       .pipe(
-        untilDestroyed(this)
+        take(1),
+        switchMap(() => this.store.selectOnce(UserState.getFullUser))
       )
-      .subscribe(fullUSer => this.user = fullUSer)
+      .subscribe(fullUser => this.user = fullUser);
   }
 
   logout() {

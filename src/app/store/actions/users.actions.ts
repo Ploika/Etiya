@@ -7,13 +7,6 @@ export  class AddUsers {
 
   constructor( public payload?: string) {}
 }
-
-export  class RemoveUsers {
-  static readonly type = '[USERS] Remove'
-
-  constructor( public payload: string ) {}
-}
-
 export  class AddOneUser {
   static readonly type = '[USERS] AddOne'
 
@@ -27,17 +20,17 @@ export class AddFullUser {
 export class UpdateUserById {
   static  readonly type = '[USERS] UpdateUserById'
 
-  constructor(public payload: {user: IFullUser, token: string}) {}
+  constructor(public user: IFullUser, public token: string) {}
 }
 export class DeleteUserById {
   static readonly type = '[USERS] DeleteUserById'
 
-  constructor(public payload: {id: number, token: string}) {}
+  constructor(public id: number, public token: string) {}
 }
 export class GetUserByEmail {
   static readonly type = '[USERS] GetUserByEmail'
 
-  constructor(public payload: {email: string, token: string}) {}
+  constructor(public email: string, public token: string) {}
 }
 export class CreateUser {
   static readonly type = '[USERS] CreateUser'

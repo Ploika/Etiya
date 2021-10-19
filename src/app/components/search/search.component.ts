@@ -1,26 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {IFullUser} from "../../models/fullUser";
-import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {ToastrService} from "ngx-toastr";
-import {Select, Store} from "@ngxs/store";
-import {Observable} from "rxjs";
+import {Store} from "@ngxs/store";
 import {UserState} from "../../store/states/users.state";
 import {AddUsers} from "../../store/actions/users.actions";
+import {switchMap, take} from "rxjs/operators";
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.css']
 })
-@UntilDestroy()
+
 export class SearchComponent implements OnInit {
   userGroup: FormGroup;
   users: IFullUser[];
   searchUser: string = '';
   concatParams: string = '';
-
-  @Select(UserState.getUsers) users$: Observable<IFullUser[]>
 
   constructor(private fb: FormBuilder,
               private toastr: ToastrService,
@@ -53,12 +50,12 @@ export class SearchComponent implements OnInit {
 
   catchUser(event: boolean) {
     if(event){
-      this.store.dispatch(new AddUsers());
-      this.users$
+      this.store.dispatch(new AddUsers())
         .pipe(
-          untilDestroyed(this)
+          take(1),
+          switchMap(() => this.store.selectOnce(UserState.getUsers))
         )
-        .subscribe(users => this.users = [...users])
+        .subscribe(users => this.users = users)
 
       this.initFormGroup();
       this.concatParams = '';
@@ -75,19 +72,19 @@ export class SearchComponent implements OnInit {
       }
     })
     if(!this.concatParams){
-      this.store.dispatch(new AddUsers());
-      this.users$
+      this.store.dispatch(new AddUsers())
         .pipe(
-          untilDestroyed(this)
+          take(1),
+          switchMap(() => this.store.selectOnce(UserState.getUsers))
         )
-        .subscribe(users => this.users = [...users])
+        .subscribe(users => this.users = users)
     } else  {
-      this.store.dispatch(new AddUsers(this.concatParams));
-      this.users$
+      this.store.dispatch(new AddUsers(this.concatParams))
         .pipe(
-          untilDestroyed(this)
+          take(1),
+          switchMap(() => this.store.selectOnce(UserState.getUsers))
         )
-        .subscribe(users => this.users = [...users])
+        .subscribe(users => this.users = users)
     }
   }
 }

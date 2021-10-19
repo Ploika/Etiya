@@ -6,7 +6,6 @@ import {
   AddOneUser,
   AddUsers,
   CreateUser, DeleteUserById, GetUserByEmail, LoginUser,
-  RemoveUsers,
   UpdateUserById
 } from "../actions/users.actions";
 import {UserService} from "../../services/user.service";
@@ -33,60 +32,51 @@ export class UserState {
   }
 
   @Selector()
-   static getUsers(state: UsersState){
-    return state.users;
+   static getUsers({ users }: UsersState){
+    return users;
   }
   @Selector()
-  static  getOneUser(state: UsersState){
-    return state.user;
+  static  getOneUser({ user }: UsersState){
+    return user;
   }
   @Selector()
-  static getFullUser(state: UsersState){
-    return state.fullUser;
+  static getFullUser({ fullUser }: UsersState){
+    return fullUser;
   }
   @Selector()
-  static getUpdateUserResponse(state: UsersState){
-    return state.updateUserResponse;
+  static getUpdateUserResponse({ updateUserResponse }: UsersState){
+    return updateUserResponse;
   }
   @Selector()
-  static getLoginResponse(state: UsersState){
-    return state.loginResponse;
+  static getLoginResponse({ loginResponse }: UsersState){
+    return loginResponse;
   }
   @Action(AddUsers)
-  addUsers({ patchState } : StateContext<UsersState>, {payload}: AddUsers) {
+  addUsers({ patchState } : StateContext<UsersState>, { payload }: AddUsers) {
     if(payload){
-       this.userService.getUserByQueryParams(payload)
+      return this.userService.getUserByQueryParams(payload)
         .pipe(
           untilDestroyed(this),
           tap(users => patchState({
-            users: [...users]
-          }) )
-        )
-        .subscribe()
-    } else {
-      this.userService.getAllUsers()
-        .pipe(
-          untilDestroyed(this),
-          tap(users => patchState({
-            users: [...users]
+            users
           }))
-        )
-        .subscribe()
+        );
+    } else {
+      return this.userService.getAllUsers()
+        .pipe(
+          untilDestroyed(this),
+          tap(users => patchState({
+            users
+          }))
+        );
     }
-  }
-
-  @Action(RemoveUsers)
-  remove({getState, patchState}: StateContext<UsersState>, { payload }: RemoveUsers){
-    patchState({
-      users: getState().users.filter(a => a.firstName !== payload)
-    })
   }
 
   @Action(AddOneUser)
   addOneUser({setState, patchState}: StateContext<UsersState>, { payload }: AddOneUser){
     if(payload){
       patchState({
-        user: {...payload}
+        user: payload
       })
     } else {
       setState(defaults)
@@ -99,28 +89,28 @@ export class UserState {
     })
   }
   @Action(GetUserByEmail)
-  getUserByEmail(ctx: StateContext<UsersState>, { payload }: GetUserByEmail){
-    return this.userService.getUserByEmail(payload.email, payload.token)
+  getUserByEmail({ patchState }: StateContext<UsersState>, { email, token }: GetUserByEmail){
+    return this.userService.getUserByEmail(email, token)
       .pipe(
-        untilDestroyed(this)
-      )
-      .subscribe(user => {
-        ctx.patchState({
-          fullUser: {...user}
+        untilDestroyed(this),
+        tap(user => {
+        patchState({
+          fullUser: user
         })
       })
+      )
   }
 
   @Action(UpdateUserById)
-  updateUserById({ patchState }: StateContext<UsersState>, { payload }: UpdateUserById){
-    if(payload.user.id) {
-      return  this.userService.updateUserById(payload.user, payload.user.id, payload.token)
+  updateUserById({ patchState }: StateContext<UsersState>, { user, token }: UpdateUserById){
+    if(user.id) {
+      return  this.userService.updateUserById( user, user.id, token)
         .pipe(
         tap({
           next: () => {},
           error: error => {
             patchState({
-              updateUserResponse: {...error}
+              updateUserResponse: error
             })
           }
         })
@@ -130,28 +120,28 @@ export class UserState {
     }
   }
   @Action(DeleteUserById)
-  deleteUserById(ctx: StateContext<UsersState>, { payload }: DeleteUserById){
-    return this.userService.deleteUserById(payload.id, payload.token)
+  deleteUserById({ patchState }: StateContext<UsersState>, { id, token }: DeleteUserById){
+    return this.userService.deleteUserById(id, token)
       .pipe(
         tap({
           next: () => {},
           error: error => {
-            ctx.patchState({
-              updateUserResponse: {...error}
+            patchState({
+              updateUserResponse: error
             })
           }
         })
       )
   }
   @Action(CreateUser)
-  createUser(ctx: StateContext<UsersState>, { payload }: CreateUser) {
+  createUser({ patchState }: StateContext<UsersState>, { payload }: CreateUser) {
     return this.authService.createUser(payload)
       .pipe(
         tap({
           next: () => {},
           error: error => {
-            ctx.patchState({
-              updateUserResponse: {...error}
+            patchState({
+              updateUserResponse: error
             })
           }
         })
@@ -159,18 +149,18 @@ export class UserState {
   }
 
   @Action(LoginUser)
-  loginUser(ctx: StateContext<UsersState>, { payload }: LoginUser){
+  loginUser({ patchState }: StateContext<UsersState>, { payload }: LoginUser){
     return this.authService.login(payload)
       .pipe(
         tap({
           next: (response) => {
-            ctx.patchState({
-              loginResponse: {...response}
+            patchState({
+              loginResponse: response
             })
           },
           error: error => {
-            ctx.patchState({
-              updateUserResponse: {...error}
+            patchState({
+              updateUserResponse: error
             })
           }
         })
