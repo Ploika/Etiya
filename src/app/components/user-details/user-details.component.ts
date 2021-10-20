@@ -13,10 +13,9 @@ import {Observable} from "rxjs";
 import { UserState } from 'src/app/store/states/users.state';
 import {CountriesState} from "../../store/states/countries.state";
 import {ICountryResponse} from "../../models/countryResponse";
-import {GetAllCountries} from "../../store/actions/countries.actions";
-import {switchMap, take} from "rxjs/operators";
+import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 
-
+@UntilDestroy()
 @Component({
   selector: 'app-user-details',
   templateUrl: './user-details.component.html',
@@ -59,10 +58,10 @@ export class UserDetailsComponent implements OnInit {
       })
       this.userAddresses.push(this.userAddressGroup);
     })
-    this.store.dispatch(new GetAllCountries())
+
+    this.countries$
       .pipe(
-        take(1),
-        switchMap(() => this.store.selectOnce(CountriesState.getCountries))
+        untilDestroyed(this)
       )
       .subscribe(countries => this.countries = countries.data);
   }

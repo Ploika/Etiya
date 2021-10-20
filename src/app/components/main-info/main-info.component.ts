@@ -36,7 +36,7 @@ export class MainInfoComponent {
   }
 
   get getFormControls() {
-    return this.userMainData.controls
+    return this.userMainData.controls;
   }
 
   checkPasswords: ValidatorFn = (group: AbstractControl):  ValidationErrors | null => {
@@ -47,7 +47,7 @@ export class MainInfoComponent {
 
   sendData(): void{
    if (this.userMainData.invalid) {
-     this.userMainData.markAllAsTouched()
+     this.userMainData.markAllAsTouched();
    }
    if(this.userMainData.valid) {
      const user = {...this.userMainData.getRawValue()};

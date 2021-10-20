@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import {DataService} from "../../services/data.service";
-import {UntilDestroy, untilDestroyed} from "@ngneat/until-destroy";
 import {TokenService} from "../../services/token.service";
 import {IFullUser} from "../../models/fullUser";
 import {Router} from "@angular/router";
@@ -18,7 +17,7 @@ import {switchMap, take} from 'rxjs/operators';
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.css']
 })
-@UntilDestroy()
+
 export class MainComponent implements OnInit {
   user: IFullUser;
 
@@ -48,12 +47,12 @@ export class MainComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if(!+result) {
         this.tokenService.removeToken();
-        this.router.navigate(['login'])
+        this.router.navigate(['login']);
       }
     })
   }
 
   goToSearch() {
-    this.router.navigate(['search'])
+    this.router.navigate(['search']);
   }
 }

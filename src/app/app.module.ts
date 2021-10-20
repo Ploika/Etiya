@@ -24,6 +24,7 @@ import {UserState} from "./store/states/users.state";
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import {CountriesState} from "./store/states/countries.state";
+import {CountriesResolver} from "./resolvers/countries.resolver";
 
 
 
@@ -31,9 +32,9 @@ let routes: Routes = [
   {path: '', redirectTo: 'login', pathMatch: 'full'},
   {path: 'login', component: LoginComponent},
   {path: 'mainInfo', component: MainInfoComponent},
-  {path: 'addressInformation', component: AddressInformationComponent},
+  {path: 'addressInformation', component: AddressInformationComponent, resolve: {CountriesResolver}},
   {path: 'main', component: MainComponent, canActivate: [AuthGuard]},
-  {path: 'search', component: SearchComponent, canActivate: [AuthGuard]}
+  {path: 'search', component: SearchComponent, canActivate: [AuthGuard], resolve: {CountriesResolver}}
 ]
 @NgModule({
   declarations: [

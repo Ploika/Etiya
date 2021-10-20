@@ -13,9 +13,8 @@ import {Observable} from "rxjs";
 import {Actions, ofActionErrored, ofActionSuccessful, Select, Store} from "@ngxs/store";
 import {UserState} from "../../store/states/users.state";
 import {AddOneUser, CreateUser} from "../../store/actions/users.actions";
-import {GetAllCountries} from "../../store/actions/countries.actions";
 import { CountriesState } from 'src/app/store/states/countries.state';
-import {switchMap, take} from "rxjs/operators";
+import {ICountryResponse} from "../../models/countryResponse";
 
 @Component({
   selector: 'app-address-information',
@@ -31,6 +30,7 @@ export class AddressInformationComponent implements OnInit {
   countries: ICountries[];
 
   @Select(UserState.getOneUser) user$: Observable<IUser>;
+  @Select(CountriesState.getCountries) countries$: Observable<ICountryResponse>;
 
   constructor(private fb: FormBuilder,
               private dataTransfer: DataService,
@@ -54,12 +54,11 @@ export class AddressInformationComponent implements OnInit {
       )
       .subscribe(user => this.user = user);
 
-    this.store.dispatch(new GetAllCountries())
+    this.countries$
       .pipe(
-        take(1),
-        switchMap(() => this.store.selectOnce(CountriesState.getCountries))
+        untilDestroyed(this)
       )
-      .subscribe(countries => this.countries = countries.data)
+      .subscribe(countries => this.countries = countries.data);
   }
 
   get getFormControls() {
@@ -77,7 +76,7 @@ export class AddressInformationComponent implements OnInit {
   }
 
   backToPreviousPage(): void {
-    this.store.dispatch(new AddOneUser())
+    this.store.dispatch(new AddOneUser());
     window.history.back();
   }
 
@@ -92,7 +91,7 @@ export class AddressInformationComponent implements OnInit {
       userAddress: (this.userAddresses.value as Array<IUserAddress>).map(value => {
         return {...value, postalCode: +value.postalCode}
       })
-    }
+    };
 
     this.store.dispatch(new CreateUser(fullUser));
     this.actions$

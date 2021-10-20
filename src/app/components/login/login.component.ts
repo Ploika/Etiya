@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
   }
 
   loginUser(): void {
-    const user = this.loginGroup.getRawValue()
+    const user = this.loginGroup.getRawValue();
     this.store.dispatch(new LoginUser(user));
     this.actions$
       .pipe(
@@ -51,10 +51,10 @@ export class LoginComponent implements OnInit {
         ofActionSuccessful(LoginUser)
       )
       .subscribe(() => {
-        const response = this.store.selectSnapshot(UserState.getLoginResponse)
+        const response = this.store.selectSnapshot(UserState.getLoginResponse);
         if(response.token){
           this.tokenService.setToken(response.token);
-          this.router.navigate(['main'])
+          this.router.navigate(['main']);
         }
       })
   }
